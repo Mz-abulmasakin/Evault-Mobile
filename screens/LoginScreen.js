@@ -14,9 +14,9 @@ function showAlert(message) {
   }
 }
 
-const topLogo = require('./assets/evault-logo.png');
+const topLogo = require('../assets/evault-logo.png');
 
-export default function App() {
+export default function App({navigation}) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
@@ -35,8 +35,8 @@ export default function App() {
               <Image style={styles.headerLogo} source={topLogo} />
             </View>
 
-            <Text style={styles.title}>Corporate Portal</Text>
-            <Text style={styles.subtitle}>Secure workspace authentication layer</Text>
+            <Text style={styles.title}>Welcome Back!, Sign in</Text>
+            <Text style={styles.subtitle}>eVault Cooperate portal </Text>
 
             {/* Login Form Container Card */}
             <View style={styles.formContainer}>
@@ -82,7 +82,9 @@ export default function App() {
                   styles.primaryButton, 
                   { transform: [{ scale: pressed ? 0.98 : 1 }] }
                 ]} 
-                onPress={() => showAlert(`Logging in user: ${username}`)}
+                onPress={() => { 
+                  showAlert(`Logging in user: ${username}`);  setTimeout(() => navigation.navigate('HomeScreen'), 2000);}
+              }
               >
                 <Text style={styles.primaryButtonText}>Login</Text>
               </Pressable>
@@ -97,7 +99,7 @@ export default function App() {
                   styles.secondaryButton, 
                   { opacity: pressed ? 0.75 : 1 }
                 ]}
-                onPress={() => showAlert('Redirecting to Registration setup')}
+                onPress ={() => navigation.navigate('Register')}
               >
                 <Text style={styles.secondaryButtonText}>Create an Account</Text>
               </Pressable>

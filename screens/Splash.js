@@ -12,8 +12,8 @@ export default function Splash({ navigation }) {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigation.replace('Home'); // Change "Home" to your screen name
-    }, 3000);
+      navigation.replace('IntroScreen'); // Change "Home" to your screen name
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -43,6 +43,7 @@ export default function Splash({ navigation }) {
       </Text>
 
     </SafeAreaView>
+    
   );
 }
 

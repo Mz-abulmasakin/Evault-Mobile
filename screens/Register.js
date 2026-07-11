@@ -14,13 +14,13 @@ function showAlert(message) {
   }
 }
 
-const topLogo = require('./assets/evault-logo.png');
+const topLogo = require('../assets/evault-logo.png');
 
-export default function App() {
+export default function App({navigation}) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
    const [email, setEmail] = useState('');
-    const [phonenumber, setPhoneNumber] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
     
 
   return (
@@ -38,15 +38,15 @@ export default function App() {
               <Image style={styles.headerLogo} source={topLogo} />
             </View>
 
-            <Text style={styles.title}>Corporate Portal</Text>
-            <Text style={styles.subtitle}>Secure workspace authentication layer</Text>
+            <Text style={styles.title}>eVault Cooperate</Text>
+            <Text style={styles.subtitle}>Get Started to eVault Cooperate World, We Business meets solutions and growth</Text>
 
             {/* Login Form Container Card */}
             <View style={styles.formContainer}>
               
               {/* Username Input Field */}
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Username or Email</Text>
+                <Text style={styles.inputLabel}>Username</Text>
                 <TextInput 
                   placeholder='Enter your username' 
                   placeholderTextColor="#94a3b8"
@@ -73,9 +73,9 @@ export default function App() {
 
               {/* email Input Field */}
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Password</Text>
+                <Text style={styles.inputLabel}>Email</Text>
                 <TextInput 
-                  placeholder='Enter your password' 
+                  placeholder='Enter your email' 
                   placeholderTextColor="#94a3b8"
                   style={styles.input} 
                   value={email}
@@ -86,9 +86,9 @@ export default function App() {
 
                {/* phone Input Field */}
               <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Password</Text>
+                <Text style={styles.inputLabel}>Phone Number (Whatsapp Active Number)</Text>
                 <TextInput 
-                  placeholder='Enter your password' 
+                  placeholder='Enter your Whatsapp Number' 
                   placeholderTextColor="#94a3b8"
                   style={styles.input} 
                   value={phoneNumber}
@@ -105,7 +105,8 @@ export default function App() {
                   styles.primaryButton, 
                   { transform: [{ scale: pressed ? 0.98 : 1 }] }
                 ]} 
-                onPress={() => showAlert(`Registered Successfully`)}
+                onPress={() => {
+                  showAlert(`Registration Successful: ${username}`); setTimeout(() => navigation.navigate('HomeScreen'),2000);}}
               >
                 <Text style={styles.primaryButtonText}>Register</Text>
               </Pressable>
@@ -114,15 +115,15 @@ export default function App() {
 
             {/* Registration Action Layout Section */}
             <View style={styles.footerContainer}>
-              <Text style={styles.footerText}>New to eVault Corporate?</Text>
+              <Text style={styles.footerText}>Already Registered , Sign in</Text>
               <Pressable 
                 style={({ pressed }) => [
                   styles.secondaryButton, 
                   { opacity: pressed ? 0.75 : 1 }
                 ]}
-                onPress={() => showAlert('Redirecting to Registration setup')}
+            onPress={() => navigation.navigate('LoginScreen')}
               >
-                <Text style={styles.secondaryButtonText}>Create an Account</Text>
+                <Text style={styles.secondaryButtonText}>Click me to Sign in</Text>
               </Pressable>
             </View>
 

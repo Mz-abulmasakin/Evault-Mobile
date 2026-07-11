@@ -5,7 +5,7 @@ import {
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 
 // --- CUSTOM COMPONENT IMPORTS ---
-import Videocomponents from './components/Videocomponents';
+import Videocomponents from '../components/VideoComponents';
 
 function showAlert(message) {
   if (Platform.OS === 'web') {
@@ -15,9 +15,9 @@ function showAlert(message) {
   }
 }
 
-const topLogo = require('./assets/evault-logo.png');
+const topLogo = require('../assets/evault-logo.png');
 
-export default function App() {
+export default function App({navigation}) {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
@@ -35,7 +35,7 @@ export default function App() {
           
           {/* Onboarding Welcome Typography */}
           <Text style={styles.subtitle}>
-            Welcome to eVaultMoney Corporate Login. Sign up to learn more.
+            Welcome to eVault Corporate Sign in , Sign up to learn more.
           </Text>
           
           {/* Primary Action Button */}
@@ -44,7 +44,7 @@ export default function App() {
               styles.primaryButton, 
               { transform: [{ scale: pressed ? 0.98 : 1 }] }
             ]} 
-            onPress={() => showAlert('Soon to be Redirected')}
+            onPress={() => navigation.navigate('LoginScreen')}
           >
             <Text style={styles.primaryButtonText}>Proceed</Text>
           </Pressable>
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   logoContainer: {
-    marginBottom: 20,
+    marginBottom: 50,
     padding: 12,
     backgroundColor: '#264bc5', // Deep branding backdrop accent
     borderRadius: 20,

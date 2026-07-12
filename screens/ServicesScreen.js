@@ -1,11 +1,10 @@
-import React from 'react';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { 
   StyleSheet, Text, View, Pressable, Platform, Alert, ScrollView, Image 
 } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons'; 
+import { Ionicons } from '@expo/vector-icons'; // Standard Expo Vector Icons
 
 // --- CUSTOM COMPONENT IMPORTS ---
 import UserCard from '../components/UserCard';
@@ -22,8 +21,9 @@ function showAlert(message) {
 const topLogo = require('../assets/evault-logo.png');
 const BRAND_COLOR = '#2a5fd3'; 
 
-export default function HomeScreen() {
-  const navigation = useNavigation();
+export default function App() {
+  // Track active tab state to handle dynamic navigation colors
+  const [activeTab, setActiveTab] = useState('Home');
 
   return (
     <SafeAreaProvider>
@@ -38,21 +38,7 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {/* User Account Dashboard Card */}
-          <View style={styles.cardContentWrapper}>
-            <UserCard 
-              username="Ziyaulhaq" 
-              bank="Evaultmoney" 
-              accountNumber="4092817364" 
-              accountBalance="150,000" 
-            />
-          </View>
-        
-          {/* Typography Content Group */}
-          <View style={styles.textHeroContainer}>
-            <Text style={styles.title}>Get your Business Up to Date without the headache</Text>
-            <Text style={styles.subtitle}>Professional TIN processing. WhatsApp updates, 48-hour guarantee</Text>
-          </View>
+         
         
           {/* Quick Sub-Navigation Action Segment */}
           <View style={styles.row2}> 
@@ -325,5 +311,37 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     paddingHorizontal: 2,
+  },
+  
+  // --- BOTTOM TAB NAVIGATION STYLES ---
+  tabNavigation: {
+    flexDirection: 'row',
+    backgroundColor: '#ffffff',
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+    paddingVertical: 10,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 12, // Native bottom safety layout
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 10,
+  },
+  navigationItems: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabBarButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  tabBarText: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 4,
   },
 });

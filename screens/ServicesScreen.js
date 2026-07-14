@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { 
   StyleSheet, Text, View, Pressable, Platform, Alert, ScrollView, Image 
 } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons'; // Standard Expo Vector Icons
+import { Ionicons } from '@expo/vector-icons'; 
 
 // --- CUSTOM COMPONENT IMPORTS ---
-import UserCard from '../components/UserCard';
-import Videocomponents from '../components/VideoComponents'; 
+import PromoCarousel from '../components/Advert-slide';
+import Category from '../components/Category'; 
 
 function showAlert(message) {
   if (Platform.OS === 'web') {
@@ -21,10 +21,7 @@ function showAlert(message) {
 const topLogo = require('../assets/evault-logo.png');
 const BRAND_COLOR = '#2a5fd3'; 
 
-export default function App() {
-  // Track active tab state to handle dynamic navigation colors
-  const [activeTab, setActiveTab] = useState('Home');
-
+export default function ServicesScreen() {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
@@ -38,33 +35,11 @@ export default function App() {
             </View>
           </View>
 
-         
-        
-          {/* Quick Sub-Navigation Action Segment */}
-          <View style={styles.row2}> 
-            <View style={styles.wrapper}>
-              <Pressable 
-                style={({ pressed }) => [
-                  styles.tabButton, 
-                  pressed && styles.tabButtonPressed
-                ]} 
-                onPress={() => showAlert('Soon to be Redirected')}
-              >
-                <Text style={styles.tabBtnText}>History</Text>
-              </Pressable>
-            </View>
-            <View style={styles.wrapper}>
-              <Pressable 
-                style={({ pressed }) => [
-                  styles.tabButton, 
-                  pressed && styles.tabButtonPressed
-                ]} 
-                onPress={() => showAlert('Soon to be Redirected')}
-              >
-                <Text style={styles.tabBtnText}>Pending work</Text>
-              </Pressable>
-            </View>     
-          </View>
+          {/* PromoCarousel Segment */}
+          <PromoCarousel />
+
+          {/* Category Segment */}
+          <Category />
 
           {/* Reconfigured Grid Section: Row 1 (3 Items) */}
           <View style={styles.inlineButtonRow}>
@@ -159,9 +134,42 @@ export default function App() {
               onPress={() => showAlert('Scuml is now 50k')}
             >
               <View style={styles.iconBackdropCircle}>
-                <Ionicons name="ellipsis-horizontal-outline" size={20} color="#ffffff" />
+                <Ionicons name="hammer-outline" size={20} color="#ffffff" />
               </View>
-              <Text style={styles.tileBtnText}>More</Text>
+              <Text style={styles.tileBtnText}>Mining License</Text>
+            </Pressable>
+          </View>
+    
+          {/* Reconfigured Grid Section: Row 4 (3 Items) */}
+          <View style={styles.inlineButtonRow}>
+            <Pressable 
+              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
+              onPress={() => showAlert('NSITF Registration portal active')}
+            >
+              <View style={styles.iconBackdropCircle}>
+                <Ionicons name="shield-half-outline" size={20} color="#ffffff" />
+              </View>
+              <Text style={styles.tileBtnText}>NSITF</Text>
+            </Pressable>
+          
+            <Pressable 
+              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
+              onPress={() => showAlert('Tax Clearance Certificate application layer')}
+            >
+              <View style={styles.iconBackdropCircle}>
+                <Ionicons name="receipt-outline" size={20} color="#ffffff" />
+              </View>
+              <Text style={styles.tileBtnText}>Tax Clearance</Text>
+            </Pressable>
+
+            <Pressable 
+              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
+              onPress={() => showAlert('NEPC Export License Registration')}
+            >
+              <View style={styles.iconBackdropCircle}>
+                <Ionicons name="globe-outline" size={20} color="#ffffff" />
+              </View>
+              <Text style={styles.tileBtnText}>NEPC</Text>
             </Pressable>
           </View>
 
@@ -320,7 +328,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#f1f5f9',
     paddingVertical: 10,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 12, // Native bottom safety layout
+    paddingBottom: Platform.OS === 'ios' ? 24 : 12,
     justifyContent: 'space-around',
     alignItems: 'center',
     shadowColor: '#000000',

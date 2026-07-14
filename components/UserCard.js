@@ -3,37 +3,46 @@ import { StyleSheet, Text, View, Pressable } from 'react-native';
 
 export default function UserCard({ username, bank, accountNumber, accountBalance }) {
   
-  // 1. Properly declare the visibility state
-  const [isTrue, setIsTrue] = useState(false);
+  // State to track if the balance is visible or hidden
+  const [isBalanceVisible, setIsBalanceVisible] = useState(false);
 
   return (
     <View style={styles.container}>
       
+      {/* Header Info */}
       <View style={styles.textWrapper}>
-        <Text style={styles.text}>Hello! {username}</Text>
+        <Text style={styles.greetingText}>Hello, {username}!</Text>
+        <Text style={styles.bankText}>{bank}</Text>
       </View>
 
-      <View style={styles.textWrapper}>
-        <Text style={styles.text}>{bank}</Text>
-      </View>
-
+      {/* Account Number Details */}
       <View style={styles.textNumberAcc}>
-        {/* 2. Uses the state to show account number or hidden mask */}
-        <Text style={styles.textNumber}>
-          Account: {isTrue ? accountNumber : '**********'}
+        <Text style={styles.labelText}>Account Number</Text>
+        <Text style={styles.accountNumberText}>
+          {accountNumber}
         </Text>
-        
-        {/* 3. Corrected Pressable tag, style injection, and toggle function */}
+      </View>
+
+      {/* Account Balance Details (With Toggle Button) */}
+      <View style={styles.balanceContainer}>
+        <View>
+          <Text style={styles.labelText}>Account Balance</Text>
+          <Text style={styles.balanceValueText}>
+            ₦{isBalanceVisible ? accountBalance : '••••••••'}
+          </Text>
+        </View>
+
         <Pressable 
-          style={styles.button} 
-          onPress={() => setIsTrue(!isTrue)}
+          style={({ pressed }) => [
+            styles.button,
+            pressed && styles.buttonPressed
+          ]} 
+          onPress={() => setIsBalanceVisible(!isBalanceVisible)}
         >
           <Text style={styles.buttonText}>
-            {isTrue ? 'Hide Number' : 'View Number'}
+            {isBalanceVisible ? 'Hide Balance' : 'Show Balance'}
           </Text>
         </Pressable>
-
-        <Text style={styles.text}>Account Balance: ₦{accountBalance}</Text>
       </View>
 
     </View>
@@ -42,42 +51,84 @@ export default function UserCard({ username, bank, accountNumber, accountBalance
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: 30,
-    backgroundColor: '#2a5fd3', // Enclosed in quotes with #
-    elevation: 5,
-    padding: 25,
-    margin: 15,
+    borderRadius: 24,
+    backgroundColor: '#2a5fd3', 
+    elevation: 6,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    padding: 24,
+    marginHorizontal: 16,
+    marginVertical: 10,
   },
   textWrapper: {  
-    marginBottom: 8,
+    marginBottom: 16,
   },
-  text: {
-    color: '#FFFFFF', // Corrected 6-character hex string
-    fontSize: 18,
+  greetingText: {
+    color: '#ffffff',
+    fontSize: 20,
+    fontWeight: '800',
+    letterSpacing: -0.2,
+  },
+  bankText: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 14,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    marginTop: 2,
   },
   textNumberAcc: {
-    marginTop: 15,
-    borderTopWidth: 0.5,
-    borderTopColor: 'rgba(255,255,255,0.3)',
-    paddingTop: 15,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.15)',
+    paddingTop: 12,
+    marginBottom: 16,
   },
-  textNumber: {
-    color: '#FFFFFF',
+  labelText: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  accountNumberText: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: 1,
+  },
+  balanceContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.15)',
+    paddingTop: 12,
+  },
+  balanceValueText: {
+    color: '#ffffff',
     fontSize: 22,
-    fontWeight: 'bold',
+    fontWeight: '800',
   },
   button: {
     backgroundColor: '#ffffff',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
     borderRadius: 12,
-    alignSelf: 'flex-start',
-    marginVertical: 10,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  buttonPressed: {
+    opacity: 0.85,
+    scale: 0.97,
   },
   buttonText: {
-    color: '#254099',
-    fontWeight: 'bold',
-    fontSize: 12,
+    color: '#2a5fd3',
+    fontWeight: '700',
+    fontSize: 11,
   },
 });
-

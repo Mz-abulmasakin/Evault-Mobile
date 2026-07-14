@@ -5,18 +5,25 @@ import {
   StyleSheet, Text, View, Pressable, Platform, Alert, ScrollView, Image 
 } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'; 
 import { Ionicons } from '@expo/vector-icons'; 
 
 // --- CUSTOM COMPONENT IMPORTS ---
 import UserCard from '../components/UserCard';
-import Videocomponents from '../components/VideoComponents'; 
+import PromoCarousel from '../components/Advert-slide';
+import VideoComponents from '../components/VideoComponents'; 
+import ServicesScreen from '../screens/ServicesScreen';
+
 
 function showAlert(message) {
   if (Platform.OS === 'web') {
-    window.alert(message);
+window.alert(message);
   } else {
     Alert.alert(message);
-  }
+     }
+    
 }
 
 const topLogo = require('../assets/evault-logo.png');
@@ -43,15 +50,17 @@ export default function HomeScreen() {
             <UserCard 
               username="Ziyaulhaq" 
               bank="Evaultmoney" 
-              accountNumber="4092817364" 
+              accountNumber="4092817364"
               accountBalance="150,000" 
             />
           </View>
-        
+          {/* Promo Carousel */}
+           <PromoCarousel />
+
           {/* Typography Content Group */}
           <View style={styles.textHeroContainer}>
             <Text style={styles.title}>Get your Business Up to Date without the headache</Text>
-            <Text style={styles.subtitle}>Professional TIN processing. WhatsApp updates, 48-hour guarantee</Text>
+            <Text style={styles.subtitle}>Professional processing, WhatsApp updates, Fast Services Delivery</Text>
           </View>
         
           {/* Quick Sub-Navigation Action Segment */}
@@ -170,7 +179,7 @@ export default function HomeScreen() {
 
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('Scuml is now 50k')}
+              onPress={() => navigation.navigate('Services')}
             >
               <View style={styles.iconBackdropCircle}>
                 <Ionicons name="ellipsis-horizontal-outline" size={20} color="#ffffff" />

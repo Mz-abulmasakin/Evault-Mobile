@@ -1,29 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react'; 
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { 
-  StyleSheet, Text, View, Pressable, Platform, Alert, ScrollView, Image 
+  StyleSheet, Text, View, Pressable, Platform, Alert, ScrollView, Image, Modal, TouchableOpacity 
 } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'; 
-import { Ionicons } from '@expo/vector-icons'; 
+import { Ionicons } from '@expo/vector-icons';
 
 // --- CUSTOM COMPONENT IMPORTS ---
 import UserCard from '../components/UserCard';
 import PromoCarousel from '../components/Advert-slide';
 import VideoComponents from '../components/VideoComponents'; 
 import ServicesScreen from '../screens/ServicesScreen';
-
+import ProfileScreen from '../screens/ProfileScreen';
+import TinRegistration from '../screens/TinRegistration';
+import WorksScreen from '../screens/WorksScreen';
+import AirtimePurchaseModal from '../components/AirtimePurchaseModal'; 
+import DataPurchaseModal from '../components/DataPurchaseModal'; 
+import CacRegistrationForm from '../components/CacRegistrationForm'; 
+import HomeScreenHeader from '../components/HomeScreenHeader';
 
 function showAlert(message) {
   if (Platform.OS === 'web') {
-window.alert(message);
+    window.alert(message);
   } else {
     Alert.alert(message);
-     }
-    
+  }
 }
 
 const topLogo = require('../assets/evault-logo.png');
@@ -32,18 +34,18 @@ const BRAND_COLOR = '#2a5fd3';
 export default function HomeScreen() {
   const navigation = useNavigation();
 
+  // Modal Display States
+  const [airtimeVisible, setAirtimeVisible] = useState(false);
+  const [dataVisible, setDataVisible] = useState(false);
+  const [cacVisible, setCacVisible] = useState(false); 
+
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
           {/* Top Header Logo Container */}
-          <View style={styles.headerLogoWrapper}>
-            <View style={styles.headerLeft}>
-              <Image style={styles.headerLogo} source={topLogo} />
-              <Text style={styles.headerTitle}>eVault Corporate</Text>
-            </View>
-          </View>
+         <HomeScreenHeader />
 
           {/* User Account Dashboard Card */}
           <View style={styles.cardContentWrapper}>
@@ -54,8 +56,9 @@ export default function HomeScreen() {
               accountBalance="150,000" 
             />
           </View>
+          
           {/* Promo Carousel */}
-           <PromoCarousel />
+          <PromoCarousel />
 
           {/* Typography Content Group */}
           <View style={styles.textHeroContainer}>
@@ -71,7 +74,7 @@ export default function HomeScreen() {
                   styles.tabButton, 
                   pressed && styles.tabButtonPressed
                 ]} 
-                onPress={() => showAlert('Soon to be Redirected')}
+                onPress={() => navigation.navigate('StatutoryHistoryScreen')}
               >
                 <Text style={styles.tabBtnText}>History</Text>
               </Pressable>
@@ -82,18 +85,20 @@ export default function HomeScreen() {
                   styles.tabButton, 
                   pressed && styles.tabButtonPressed
                 ]} 
-                onPress={() => showAlert('Soon to be Redirected')}
+                onPress={() => navigation.navigate('WorksScreen')}
               >
                 <Text style={styles.tabBtnText}>Pending work</Text>
               </Pressable>
             </View>     
           </View>
 
-          {/* Reconfigured Grid Section: Row 1 (3 Items) */}
+          {/* --- SERVICES GRID SYSTEM --- */}
+
+          {/* Row 1: Utilities & Telecom */}
           <View style={styles.inlineButtonRow}>
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('Soon to be Redirected')}
+              onPress={() => setAirtimeVisible(true)}
             >
               <View style={styles.iconBackdropCircle}>
                 <Ionicons name="phone-portrait-outline" size={20} color="#ffffff" />
@@ -103,7 +108,7 @@ export default function HomeScreen() {
           
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('Soon to be Redirected')}
+              onPress={() => setDataVisible(true)}
             >
               <View style={styles.iconBackdropCircle}>
                 <Ionicons name="wifi-outline" size={20} color="#ffffff" />
@@ -113,7 +118,7 @@ export default function HomeScreen() {
 
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('CAC Price, Enterprise N45,000, Ltd: 55k')}
+              onPress={() => showAlert('Cable TV subscription portals for DStv, GOtv, and StarTimes loading...')}
             >
               <View style={styles.iconBackdropCircle}>
                 <Ionicons name="tv-outline" size={20} color="#ffffff" />
@@ -122,11 +127,11 @@ export default function HomeScreen() {
             </Pressable>
           </View>
 
-          {/* Reconfigured Grid Section: Row 2 (3 Items) */}
+          {/* Row 2: Corporate Registrations */}
           <View style={styles.inlineButtonRow}>
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('Soon to be Redirected')}
+              onPress={() => setCacVisible(true)}
             >
               <View style={styles.iconBackdropCircle}>
                 <Ionicons name="business-outline" size={20} color="#ffffff" />
@@ -136,7 +141,7 @@ export default function HomeScreen() {
           
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('Soon to be Redirected')}
+              onPress={() => showAlert('SCUML Compliance processing portal routing active soon.')}
             >
               <View style={styles.iconBackdropCircle}>
                 <Ionicons name="shield-checkmark-outline" size={20} color="#ffffff" />
@@ -146,7 +151,7 @@ export default function HomeScreen() {
 
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('CAC Price, Enterprise N45,000, Ltd: 55k')}
+              onPress={() => showAlert('Trademark Protection setup: Secure your business brand name and logo.')}
             >
               <View style={styles.iconBackdropCircle}>
                 <Ionicons name="ribbon-outline" size={20} color="#ffffff" />
@@ -155,11 +160,11 @@ export default function HomeScreen() {
             </Pressable>
           </View>
     
-          {/* Reconfigured Grid Section: Row 3 (3 Items) */}
+          {/* Row 3: Identity & Basic Tax Verification */}
           <View style={styles.inlineButtonRow}>
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('NIN Verification Layer Active')}
+              onPress={() => showAlert('NIN Validation Engine online: Verify identity records.')}
             >
               <View style={styles.iconBackdropCircle}>
                 <Ionicons name="id-card-outline" size={20} color="#ffffff" />
@@ -169,12 +174,46 @@ export default function HomeScreen() {
           
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('BVN Verification Layer Active')}
+              onPress={() => showAlert('BVN Validation Verification Engine online.')}
             >
               <View style={styles.iconBackdropCircle}>
                 <Ionicons name="finger-print-outline" size={20} color="#ffffff" />
               </View>
-              <Text style={styles.tileBtnText}>BVN</Text>
+              <Text style={styles.tileBtnText}>BVN Services</Text>
+            </Pressable>
+
+            <Pressable 
+              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
+              onPress={() => navigation.navigate('TinRegistration')}            
+            >
+              <View style={styles.iconBackdropCircle}>
+                {/* Fixed: Replaced duplicate ellipsis with an explicit document text icon */}
+                <Ionicons name="document-text-outline" size={20} color="#ffffff" />
+              </View>
+              <Text style={styles.tileBtnText}>TIN</Text>
+            </Pressable>
+          </View>
+
+          {/* Row 4: Premium Operations & Catch-All */}
+          <View style={styles.inlineButtonRow}>
+            <Pressable 
+              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
+              onPress={() => showAlert('Premium NIN Extended Services Portal.')}
+            >
+              <View style={styles.iconBackdropCircle}>
+                <Ionicons name="people-outline" size={20} color="#ffffff" />
+              </View>
+              <Text style={styles.tileBtnText}>NIN Services</Text>
+            </Pressable>
+          
+            <Pressable 
+              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
+              onPress={() => showAlert('BVN Premium Data Slip extraction utility online.')}
+            >
+              <View style={styles.iconBackdropCircle}>
+                <Ionicons name="receipt-outline" size={20} color="#ffffff" />
+              </View>
+              <Text style={styles.tileBtnText}>BVN Slip</Text>
             </Pressable>
 
             <Pressable 
@@ -190,6 +229,27 @@ export default function HomeScreen() {
 
         </ScrollView>
         <StatusBar style="dark" /> 
+
+        {/* Modal Context Mounting Points */}
+        <AirtimePurchaseModal 
+          visible={airtimeVisible} 
+          onClose={() => setAirtimeVisible(false)} 
+        />
+
+        <DataPurchaseModal 
+          visible={dataVisible} 
+          onClose={() => setDataVisible(false)} 
+        />
+
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={cacVisible}
+          onRequestClose={() => setCacVisible(false)}
+        >
+          <CacRegistrationForm onClose={() => setCacVisible(false)} />
+        </Modal>
+
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -209,12 +269,12 @@ const styles = StyleSheet.create({
   headerLogoWrapper: {
     width: '92%',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center', 
+    justifyContent: 'space-between', 
+    alignItems: 'center',            
     marginBottom: 20,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: BRAND_COLOR, 
+    backgroundColor: BRAND_COLOR,     
     borderRadius: 16,
     shadowColor: BRAND_COLOR,
     shadowOffset: { width: 0, height: 4 },
@@ -234,10 +294,36 @@ const styles = StyleSheet.create({
     tintColor: '#ffffff', 
   },
   headerTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
-    color: '#ffffff',
+    color: '#ffffff',     
     letterSpacing: 0.1,
+  },
+  notificationButton: {
+    position: 'relative', 
+    padding: 2,
+  },
+  notificationIcon: {
+    fontSize: 22,
+  },
+  badgeContainer: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    backgroundColor: '#044b27', 
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: BRAND_COLOR,   
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '800',
+    textAlign: 'center',
   },
   cardContentWrapper: {
     width: '100%', 

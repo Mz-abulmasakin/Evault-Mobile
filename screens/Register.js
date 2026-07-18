@@ -18,6 +18,7 @@ const topLogo = require('../assets/evault-logo.png');
 
 export default function App({navigation}) {
   const [username, setUsername] = useState('');
+  const [fullname, setfullname] = useState('');
   const [password, setPassword] = useState('');
    const [email, setEmail] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -56,6 +57,19 @@ export default function App({navigation}) {
                   autoCapitalize="none"
                 />
               </View>
+
+               {/* Fullname Input Field */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Fullname</Text>
+                <TextInput 
+                  placeholder='Enter your Fullname' 
+                  placeholderTextColor="#94a3b8"
+                  style={styles.input} 
+                  value={fullname}
+                  onChangeText={setfullname}
+                  autoCapitalize="none"
+                />
+              </View> 
 
               {/* Password Input Field */}
               <View style={styles.inputGroup}>

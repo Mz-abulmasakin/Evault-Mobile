@@ -65,6 +65,9 @@ export default function App({navigation}) {
                   value={password}
                   onChangeText={setPassword}
                   autoCapitalize="none"
+                  leftIcon="lock"
+                  rightIcon="eye"
+
                 />
               </View>
 
@@ -83,7 +86,7 @@ export default function App({navigation}) {
                   { transform: [{ scale: pressed ? 0.98 : 1 }] }
                 ]} 
                 onPress={() => { 
-                  showAlert(`Logging in user: ${username}`);  setTimeout(() => navigation.navigate('HomeScreen'), 2000);}
+                  showAlert(`Welcome: ${username}`);  setTimeout(() => navigation.navigate('HomeScreen'), 2000);}
               }
               >
                 <Text style={styles.primaryButtonText}>Login</Text>

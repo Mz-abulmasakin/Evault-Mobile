@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react'; 
+import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { 
   StyleSheet, Text, View, Pressable, Platform, Alert, ScrollView, Image 
@@ -9,6 +10,9 @@ import { Ionicons } from '@expo/vector-icons';
 // --- CUSTOM COMPONENT IMPORTS ---
 import PromoCarousel from '../components/Advert-slide';
 import Category from '../components/Category'; 
+import AirtimePurchaseModal from '../components/AirtimePurchaseModal';
+import DataPurchaseModal from '../components/DataPurchaseModal'; 
+import TinRegistration from '../screens/TinRegistration';
 
 function showAlert(message) {
   if (Platform.OS === 'web') {
@@ -22,6 +26,10 @@ const topLogo = require('../assets/evault-logo.png');
 const BRAND_COLOR = '#2a5fd3'; 
 
 export default function ServicesScreen() {
+  const navigation = useNavigation();
+  const [airtimeVisible, setAirtimeVisible] = useState(false);
+  const [dataVisible, setDataVisible] = useState(false); 
+
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
@@ -41,11 +49,13 @@ export default function ServicesScreen() {
           {/* Category Segment */}
           <Category />
 
-          {/* Reconfigured Grid Section: Row 1 (3 Items) */}
+          {/* --- SERVICES GRID SYSTEM --- */}
+
+          {/* Row 1: Utilities & Telecom */}
           <View style={styles.inlineButtonRow}>
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('Soon to be Redirected')}
+              onPress={() => setAirtimeVisible(true)} 
             >
               <View style={styles.iconBackdropCircle}>
                 <Ionicons name="phone-portrait-outline" size={20} color="#ffffff" />
@@ -55,7 +65,7 @@ export default function ServicesScreen() {
           
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('Soon to be Redirected')}
+              onPress={() => setDataVisible(true)} 
             >
               <View style={styles.iconBackdropCircle}>
                 <Ionicons name="wifi-outline" size={20} color="#ffffff" />
@@ -65,7 +75,7 @@ export default function ServicesScreen() {
 
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('CAC Price, Enterprise N45,000, Ltd: 55k')}
+              onPress={() => showAlert('Coming soon')}
             >
               <View style={styles.iconBackdropCircle}>
                 <Ionicons name="tv-outline" size={20} color="#ffffff" />
@@ -74,11 +84,11 @@ export default function ServicesScreen() {
             </Pressable>
           </View>
 
-          {/* Reconfigured Grid Section: Row 2 (3 Items) */}
+          {/* Row 2: Corporate Registrations */}
           <View style={styles.inlineButtonRow}>
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('Soon to be Redirected')}
+              onPress={() => showAlert('Coming soon')}
             >
               <View style={styles.iconBackdropCircle}>
                 <Ionicons name="business-outline" size={20} color="#ffffff" />
@@ -88,7 +98,7 @@ export default function ServicesScreen() {
           
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('Soon to be Redirected')}
+              onPress={() => showAlert('Coming soon')}
             >
               <View style={styles.iconBackdropCircle}>
                 <Ionicons name="shield-checkmark-outline" size={20} color="#ffffff" />
@@ -98,7 +108,7 @@ export default function ServicesScreen() {
 
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('CAC Price, Enterprise N45,000, Ltd: 55k')}
+              onPress={() => showAlert('Coming soon')}
             >
               <View style={styles.iconBackdropCircle}>
                 <Ionicons name="ribbon-outline" size={20} color="#ffffff" />
@@ -107,11 +117,11 @@ export default function ServicesScreen() {
             </Pressable>
           </View>
     
-          {/* Reconfigured Grid Section: Row 3 (3 Items) */}
+          {/* Row 3: Identity & Basic Tax Verification */}
           <View style={styles.inlineButtonRow}>
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('NIN Verification Layer Active')}
+              onPress={() => showAlert('Coming soon')}
             >
               <View style={styles.iconBackdropCircle}>
                 <Ionicons name="id-card-outline" size={20} color="#ffffff" />
@@ -121,7 +131,7 @@ export default function ServicesScreen() {
           
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('BVN Verification Layer Active')}
+              onPress={() => showAlert('Coming soon')}
             >
               <View style={styles.iconBackdropCircle}>
                 <Ionicons name="finger-print-outline" size={20} color="#ffffff" />
@@ -131,20 +141,53 @@ export default function ServicesScreen() {
 
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('Scuml is now 50k')}
+              onPress={() => navigation.navigate('TinRegistration')}
             >
               <View style={styles.iconBackdropCircle}>
-                <Ionicons name="hammer-outline" size={20} color="#ffffff" />
+                <Ionicons name="document-text-outline" size={20} color="#ffffff" />
               </View>
-              <Text style={styles.tileBtnText}>Mining License</Text>
+              <Text style={styles.tileBtnText}>TIN</Text>
             </Pressable>
           </View>
-    
-          {/* Reconfigured Grid Section: Row 4 (3 Items) */}
+
+          {/* Row 4: Premium Identity Operations & Procurement */}
           <View style={styles.inlineButtonRow}>
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('NSITF Registration portal active')}
+              onPress={() => showAlert('Coming soon')}
+            >
+              <View style={styles.iconBackdropCircle}>
+                <Ionicons name="people-outline" size={20} color="#ffffff" />
+              </View>
+              <Text style={styles.tileBtnText}>NIN Services</Text>
+            </Pressable>
+          
+            <Pressable 
+              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
+              onPress={() => showAlert('Coming soon')}
+            >
+              <View style={styles.iconBackdropCircle}>
+                <Ionicons name="receipt-outline" size={20} color="#ffffff" />
+              </View>
+              <Text style={styles.tileBtnText}>BVN Slip</Text>
+            </Pressable>
+ 
+            <Pressable 
+              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
+              onPress={() => showAlert('Coming soon')}
+            >
+              <View style={styles.iconBackdropCircle}>
+                <Ionicons name="briefcase-outline" size={20} color="#ffffff" />
+              </View>
+              <Text style={styles.tileBtnText}>Bid bond</Text>
+            </Pressable>
+          </View>
+    
+          {/* Row 5: Regulatory Compliance & Certification */}
+          <View style={styles.inlineButtonRow}>
+            <Pressable 
+              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
+              onPress={() => showAlert('Coming soon')}
             >
               <View style={styles.iconBackdropCircle}>
                 <Ionicons name="shield-half-outline" size={20} color="#ffffff" />
@@ -154,7 +197,7 @@ export default function ServicesScreen() {
           
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('Tax Clearance Certificate application layer')}
+              onPress={() => showAlert('Coming soon')}
             >
               <View style={styles.iconBackdropCircle}>
                 <Ionicons name="receipt-outline" size={20} color="#ffffff" />
@@ -164,7 +207,7 @@ export default function ServicesScreen() {
 
             <Pressable 
               style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('NEPC Export License Registration')}
+              onPress={() => showAlert('Coming soon')}
             >
               <View style={styles.iconBackdropCircle}>
                 <Ionicons name="globe-outline" size={20} color="#ffffff" />
@@ -175,6 +218,18 @@ export default function ServicesScreen() {
 
         </ScrollView>
         <StatusBar style="dark" /> 
+
+        {/* Modal Context Mounting Points */}
+        <AirtimePurchaseModal 
+          visible={airtimeVisible} 
+          onClose={() => setAirtimeVisible(false)} 
+        />
+
+        <DataPurchaseModal
+          visible={dataVisible}
+          onClose={() => setDataVisible(false)}
+        />
+
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -224,61 +279,6 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     letterSpacing: 0.1,
   },
-  cardContentWrapper: {
-    width: '100%', 
-    marginBottom: 24,
-  },
-  textHeroContainer: {
-    width: '92%',
-    paddingHorizontal: 8,
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#0f172a', 
-    marginBottom: 8,
-    textAlign: 'center',
-    letterSpacing: -0.2,
-  },
-  subtitle: {
-    fontSize: 13,
-    color: '#64748b', 
-    textAlign: 'center',
-    lineHeight: 18,
-  },
-  row2: {
-    flexDirection: 'row',
-    justifyContent: 'center', 
-    alignItems: 'center',
-    marginBottom: 16,
-    width: '92%',
-    borderRadius: 20,
-    backgroundColor: '#f1f5f9', 
-    padding: 4,
-  },
-  wrapper: {
-    flex: 1,
-    marginHorizontal: 4,
-  },
-  tabButton: {
-    backgroundColor: '#ffffff',
-    paddingVertical: 10,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  tabButtonPressed: {
-    backgroundColor: '#f8fafc',
-    opacity: 0.9,
-  },
-  tabBtnText: {
-    color: BRAND_COLOR,
-    fontSize: 13,
-    fontWeight: '700',
-  },
   inlineButtonRow: {
     flexDirection: 'row', 
     justifyContent: 'space-between',
@@ -319,37 +319,5 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     paddingHorizontal: 2,
-  },
-  
-  // --- BOTTOM TAB NAVIGATION STYLES ---
-  tabNavigation: {
-    flexDirection: 'row',
-    backgroundColor: '#ffffff',
-    borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
-    paddingVertical: 10,
-    paddingBottom: Platform.OS === 'ios' ? 24 : 12,
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 10,
-  },
-  navigationItems: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tabBarButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-  },
-  tabBarText: {
-    fontSize: 11,
-    fontWeight: '600',
-    marginTop: 4,
   },
 });

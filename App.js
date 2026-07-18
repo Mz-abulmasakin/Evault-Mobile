@@ -13,9 +13,13 @@ import IntroScreen from './screens/IntroScreen';
 import Register from './screens/Register';
 import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
+import TinRegistration from './screens/TinRegistration';
 import ServicesScreen from './screens/ServicesScreen'; 
 import SupportScreen from './screens/SupportScreen';   
-import AccountScreen from './screens/AccountScreen';   
+import AccountScreen from './screens/AccountScreen'; 
+import ProfileScreen from './screens/ProfileScreen';    
+import WorksScreen from './screens/WorksScreen';     
+import StatutoryHistoryScreen from './screens/StatutoryHistoryScreen'; 
 
 const BRAND_COLOR = '#2a5fd3'; 
 const Stack = createNativeStackNavigator();
@@ -75,7 +79,7 @@ function MainTabNavigator() {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Services" component={ServicesScreen} />
       <Tab.Screen name="Support" component={SupportScreen} />
-      <Tab.Screen name="Account" component={AccountScreen} />
+      <Tab.Screen name="Account" component={ProfileScreen} />
     </Tab.Navigator>
   );
 }
@@ -91,6 +95,9 @@ export default function App() {
           <Stack.Screen name="Register" component={Register} />
           <Stack.Screen name="LoginScreen" component={LoginScreen} />
           <Stack.Screen name="HomeScreen" component={MainTabNavigator} />
+           <Stack.Screen name="TinRegistration" component={TinRegistration} />
+           <Stack.Screen name="WorksScreen" component={WorksScreen} />
+        <Stack.Screen name="StatutoryHistoryScreen" component={StatutoryHistoryScreen}/>
         </Stack.Navigator>
       </NavigationContainer>
       <StatusBar style="dark" />

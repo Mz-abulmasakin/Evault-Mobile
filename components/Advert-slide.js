@@ -9,11 +9,12 @@ import {
   Platform 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+// 1. Import the navigation hook
+import { useNavigation } from '@react-navigation/native'; 
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CARD_WIDTH = SCREEN_WIDTH * 0.92; // Match the 92% width of your other home elements
+const CARD_WIDTH = SCREEN_WIDTH * 0.92;
 
-// --- PREMIUM PROMOTIONAL BANNER DATA ---
 const BANNERS = [
   {
     id: '1',
@@ -21,7 +22,7 @@ const BANNERS = [
     desc: 'Flexible solar financing backings for salaried professionals.',
     badge: 'ECO-ENERGY',
     icon: 'sunny',
-    primaryColor: '#10b981', // Emerald green
+    primaryColor: '#10b981',
     btnText: 'Apply Now',
   },
   {
@@ -30,7 +31,7 @@ const BANNERS = [
     desc: 'Enterprise registration for ₦45,000. Ltd shares starting at ₦55k.',
     badge: '48HR GUARANTEE',
     icon: 'business',
-    primaryColor: '#2a5fd3', // eVault Blue
+    primaryColor: '#2a5fd3',
     btnText: 'Register',
   },
   {
@@ -39,7 +40,7 @@ const BANNERS = [
     desc: 'Skip the stress. Smooth verification files processed directly.',
     badge: 'PROMO PRICE',
     icon: 'shield-checkmark',
-    primaryColor: '#7c3aed', // Royal Violet
+    primaryColor: '#7c3aed',
     btnText: 'Get Started',
   }
 ];
@@ -47,8 +48,10 @@ const BANNERS = [
 export default function PromoCarousel() {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef(null);
+  
+  // 2. Initialize navigation inside the component
+  const navigation = useNavigation(); 
 
-  // --- AUTO-PLAY ROTATION TIMER (Slides every 4 seconds) ---
   useEffect(() => {
     const autoPlayTimer = setInterval(() => {
       let nextIndex = activeIndex + 1;
@@ -66,7 +69,6 @@ export default function PromoCarousel() {
     return () => clearInterval(autoPlayTimer);
   }, [activeIndex]);
 
-  // --- TRACKS ACTIVE SLIDE INDEX DURING MANUAL SCROLLS ---
   const handleScroll = (event) => {
     const scrollPosition = event.nativeEvent.contentOffset.x;
     const index = Math.round(scrollPosition / SCREEN_WIDTH);
@@ -79,11 +81,9 @@ export default function PromoCarousel() {
     <View style={styles.slideWrapper}>
       <View style={[styles.card, { backgroundColor: item.primaryColor }]}>
         
-        {/* Visual Background Accent Rings */}
         <View style={styles.bgCircleLeft} />
         <View style={styles.bgCircleRight} />
 
-        {/* Left Side: Text Information */}
         <View style={styles.textContainer}>
           <View style={styles.badgeContainer}>
             <Text style={styles.badgeText}>{item.badge}</Text>
@@ -91,13 +91,19 @@ export default function PromoCarousel() {
           <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
           <Text style={styles.cardDesc} numberOfLines={2}>{item.desc}</Text>
           
-          <Pressable style={styles.ctaButton}>
+          {/* 3. Updated onPress to handle the redirect */}
+          <Pressable 
+            style={styles.ctaButton} 
+            onPress={() => navigation.navigate('ServicesScreen', { 
+              bannerId: item.id, 
+              bannerTitle: item.title 
+            })}
+          >
             <Text style={[styles.ctaText, { color: item.primaryColor }]}>{item.btnText}</Text>
             <Ionicons name="arrow-forward" size={12} color={item.primaryColor} />
           </Pressable>
         </View>
 
-        {/* Right Side: Big Floating Icon */}
         <View style={styles.iconContainer}>
           <Ionicons name={item.icon} size={64} color="rgba(255, 255, 255, 0.22)" />
         </View>
@@ -108,7 +114,6 @@ export default function PromoCarousel() {
 
   return (
     <View style={styles.container}>
-      {/* Scrollable Slider */}
       <FlatList
         ref={flatListRef}
         data={BANNERS}
@@ -124,7 +129,6 @@ export default function PromoCarousel() {
         snapToAlignment="center"
       />
 
-      {/* Pagination Active Dots Indicator */}
       <View style={styles.paginationContainer}>
         {BANNERS.map((_, index) => (
           <View 
@@ -160,7 +164,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 18,
-    position: 'overflow',
     overflow: 'hidden',
     ...Platform.select({
       ios: {
@@ -174,7 +177,6 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  // Soft decorative vector circles to add app depth
   bgCircleRight: {
     position: 'absolute',
     right: -30,
@@ -257,7 +259,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     marginRight: 4,
   },
-  // --- PAGINATION INDICATOR (OPAY PIN OVAL STYLE) ---
   paginationContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -270,7 +271,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 3,
   },
   activeDot: {
-    width: 14, // Extended oval pill look when active
+    width: 14,
     backgroundColor: '#2a5fd3', 
   },
   inactiveDot: {

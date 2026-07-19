@@ -1,13 +1,16 @@
 // screens/StatutoryHistoryScreen.jsx
 import React from 'react';
-import { View, Text, FlatList, TextInput, ActivityIndicator, StyleSheet, RefreshControl , TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, TextInput, ActivityIndicator, StyleSheet, RefreshControl, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native'; // Added for routing
+import { Ionicons } from '@expo/vector-icons'; // Added for back icon
 import { useStatutory } from '../hooks/useStatutory';
 import { StatutoryCard } from '../components/StatutoryCard';
 
 const BRAND_BLUE = '#2a5fd3';
 
 export default function StatutoryHistoryScreen() {
+  const navigation = useNavigation(); // Instantiate navigation hook
   const {
     searchQuery,
     setSearchQuery,
@@ -21,8 +24,21 @@ export default function StatutoryHistoryScreen() {
   return (
     <SafeAreaView style={styles.layoutContainer} edges={['top', 'left', 'right']}>
       <View style={styles.headerBlock}>
-        <Text style={styles.titleHeadline}>Corporate History</Text>
         
+        {/* --- ADDED HEADER ROW WITH BACK BUTTON --- */}
+        <View style={styles.headerRow}>
+          <TouchableOpacity 
+            style={styles.backButton} 
+            onPress={() => navigation.navigate('HomeScreen')} // Directly points back to Home
+            accessibilityRole="button"
+            accessibilityLabel="Go back to home screen"
+          >
+            <Ionicons name="arrow-back" size={24} color="#0F172A" />
+          </TouchableOpacity>
+          <Text style={styles.titleHeadline}>Corporate History</Text>
+        </View>
+        
+        {/* Search Input field */}
         <View style={styles.searchBarBox}>
           <Text style={styles.searchIconSymbol}>🏢</Text>
           <TextInput
@@ -68,7 +84,24 @@ export default function StatutoryHistoryScreen() {
 const styles = StyleSheet.create({
   layoutContainer: { flex: 1, backgroundColor: '#F8FAFC' },
   headerBlock: { backgroundColor: '#FFFFFF', paddingBottom: 16, borderBottomWidth: 1, borderColor: '#E2E8F0', paddingTop: 8 },
-  titleHeadline: { fontSize: 22, fontWeight: '700', color: '#0F172A', paddingHorizontal: 20, marginBottom: 12 },
+  
+  // Header Row Layout Configs
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
+  backButton: {
+    padding: 4,
+    marginRight: 6,
+  },
+  titleHeadline: { 
+    fontSize: 22, 
+    fontWeight: '700', 
+    color: '#0F172A'
+  },
+  
   searchBarBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F1F5F9', marginHorizontal: 20, borderRadius: 10, paddingHorizontal: 10, borderWidth: 1, borderColor: '#E2E8F0' },
   searchIconSymbol: { fontSize: 13, marginRight: 6 },
   textInputNode: { flex: 1, height: 40, fontSize: 13, color: '#0F172A', paddingVertical: 0 },

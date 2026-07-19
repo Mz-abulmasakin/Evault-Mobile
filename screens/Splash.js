@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
 
   version: {
     position: 'absolute',
-    bottom: 40,
+    bottom: 60,
     color: '#E6F0FF',
     fontSize: 14,
   },

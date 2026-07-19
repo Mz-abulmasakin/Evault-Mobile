@@ -5,7 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'; 
 import { Ionicons } from '@expo/vector-icons'; 
 import { Platform } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // --- CLEAN FILE IMPORTS ---
 import Splash from './screens/Splash';
@@ -27,6 +27,12 @@ const Tab = createBottomTabNavigator();
 
 // --- BOTTOM NAVIGATION WITH PROTECTED PADDING ---
 function MainTabNavigator() {
+  // Real device safe-area inset (gesture bar / home indicator / 3-button nav — varies per device)
+  const insets = useSafeAreaInsets();
+
+  // Height of the tab bar's own content (icons + labels), excluding the safe area.
+  const BASE_TAB_BAR_HEIGHT = Platform.OS === 'ios' ? 50 : 56;
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -40,13 +46,14 @@ function MainTabNavigator() {
           borderTopWidth: 1,
           borderTopColor: '#f1f5f9',
           paddingTop: 10,
-          
-          // FIX: Increased bottom padding for Android to force everything upward
-          paddingBottom: Platform.OS === 'ios' ? 28 : 20, 
-          
-          // FIX: Set a dedicated safe height so elements don't squash into the navigation keys
-          height: Platform.OS === 'ios' ? 96 : 80, 
-          
+
+          // FIX: use the device's actual bottom inset instead of a hardcoded guess,
+          // so the tab bar always clears the gesture bar / home indicator / nav keys.
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 12,
+
+          // FIX: total height = fixed content height + real safe area, not a flat number.
+          height: BASE_TAB_BAR_HEIGHT + insets.bottom,
+
           elevation: 12,
           shadowColor: '#000000',
           shadowOffset: { width: 0, height: -4 },
@@ -56,8 +63,6 @@ function MainTabNavigator() {
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '700',
-          // FIX: Adds a slight bottom lift specifically on Android devices
-          marginBottom: Platform.OS === 'android' ? 2 : 0, 
         },
         tabBarIcon: ({ focused, color }) => {
           let iconName;
@@ -94,6 +99,7 @@ export default function App() {
           <Stack.Screen name="IntroScreen" component={IntroScreen} />
           <Stack.Screen name="Register" component={Register} />
           <Stack.Screen name="LoginScreen" component={LoginScreen} />
+            <Stack.Screen name="ServicesScreen" component={ServicesScreen} />
           <Stack.Screen name="HomeScreen" component={MainTabNavigator} />
            <Stack.Screen name="TinRegistration" component={TinRegistration} />
            <Stack.Screen name="WorksScreen" component={WorksScreen} />

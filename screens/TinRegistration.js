@@ -8,14 +8,13 @@ import {
   ScrollView, 
   KeyboardAvoidingView, 
   Platform, 
-  Dimensions,
   Alert,
   ActivityIndicator
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native'; // Fixed: Import from React Navigation instead of react
 import { Ionicons } from '@expo/vector-icons';
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const BRAND_COLOR = '#23197e'; // FIRS / JTB Green
+const BRAND_COLOR = '#23197e'; 
 
 function showFormAlert(title, message) {
   if (Platform.OS === 'web') {
@@ -28,26 +27,27 @@ function showFormAlert(title, message) {
 export default function TinRegistration({ onClose, onSuccess }) {
   // Step workflow: 'taxpayer_select' -> 'basic_info' -> 'documents' -> 'review_submit'
   const [step, setStep] = useState('taxpayer_select');
+  const navigation = useNavigation(); // Fixed: Removed the empty string argument
   const [taxpayerType, setTaxpayerType] = useState(''); // 'corporate' or 'individual'
 
-  // Step 2: Input States
+  // Input States
   const [companyName, setCompanyName] = useState('');
   const [fullName, setFullName] = useState('');
-  const [cacNumber, setCacNumber] = useState(''); // RC/BN Number
-  const [ninNumber, setNinNumber] = useState(''); // 11-Digit identity key
+  const [cacNumber, setCacNumber] = useState(''); 
+  const [ninNumber, setNinNumber] = useState(''); 
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
 
-  // Step 3: File Upload States
+  // File Upload States
   const [uploadedCac, setUploadedCac] = useState(false);
   const [uploadedUtility, setUploadedUtility] = useState(false);
   const [uploadedId, setUploadedId] = useState(false);
   const [uploadedMemart, setUploadedMemart] = useState(false);
 
-  // Simulation & Success States
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [generatedTin, setGeneratedTin] = useState('');
+  // Submission States
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleNext = () => {
     if (step === 'taxpayer_select') {
@@ -57,7 +57,6 @@ export default function TinRegistration({ onClose, onSuccess }) {
         showFormAlert('Selection Required', 'Please select a taxpayer class to proceed.');
       }
     } else if (step === 'basic_info') {
-      // Inputs validation
       if (taxpayerType === 'corporate') {
         if (!companyName || !cacNumber || !email || !phone || !address) {
           showFormAlert('Missing Fields', 'Please complete all business parameter fields.');
@@ -75,7 +74,6 @@ export default function TinRegistration({ onClose, onSuccess }) {
       }
       setStep('documents');
     } else if (step === 'documents') {
-      // Document uploads validation
       if (taxpayerType === 'corporate') {
         if (!uploadedCac || !uploadedUtility || !uploadedMemart) {
           showFormAlert('Upload Status', 'All 3 corporate documents must be uploaded.');
@@ -91,38 +89,40 @@ export default function TinRegistration({ onClose, onSuccess }) {
     }
   };
 
+  // Stage-aware back arrow navigation system
   const handleBack = () => {
-    if (step === 'taxpayer_select') {
+    if (isSubmitted) {
       if (onClose) onClose();
+      navigation.navigate('HomeScreen');
+    } else if (step === 'taxpayer_select') {
+      if (onClose) onClose();
+      navigation.goBack(); // Safely exit screen if at the very beginning
     } else if (step === 'basic_info') {
       setStep('taxpayer_select');
     } else if (step === 'documents') {
       setStep('basic_info');
     } else if (step === 'review_submit') {
-      if (generatedTin) {
-        if (onClose) onClose();
-      } else {
-        setStep('documents');
-      }
+      setStep('documents');
     }
   };
 
-  const handleSimulateVerification = () => {
-    setIsVerifying(true);
+  const handleSubmitToAdmin = () => {
+    setIsSubmitting(true);
     
-    // Simulate background verification query
     setTimeout(() => {
-      setIsVerifying(false);
-      const randomTin = Math.floor(1000000000 + Math.random() * 9000000000).toString();
-      setGeneratedTin(randomTin);
+      setIsSubmitting(false);
+      setIsSubmitted(true);
       
       const registeredName = taxpayerType === 'corporate' ? companyName : fullName;
-      showFormAlert('Verification Succeeded', `Official TIN: ${randomTin} has been registered to ${registeredName}.`);
+      showFormAlert(
+        'Submission Received', 
+        `Your tax profile documentation for ${registeredName} has been received for processing.`
+      );
       
       if (onSuccess) {
-        onSuccess(randomTin, registeredName);
+        onSuccess(registeredName);
       }
-    }, 2800);
+    }, 2500);
   };
 
   return (
@@ -130,13 +130,15 @@ export default function TinRegistration({ onClose, onSuccess }) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
       style={styles.container}
     >
-      {/* HEADER SYSTEM */}
+      {/* HEADER SYSTEM WITH ARROW NAVIGATION */}
       <View style={styles.header}>
         <Pressable onPress={handleBack} style={styles.backBtn}>
           <Ionicons name="arrow-back" size={22} color="#0f172a" />
         </Pressable>
-        <Text style={styles.headerTitle}>JTB Tax Portal</Text>
-        <Text style={styles.stepBadge}>{step.toUpperCase().replace('_', ' ')}</Text>
+        <Text style={styles.headerTitle}>TIN Registration Portal</Text>
+        <Text style={styles.stepBadge}>
+          {isSubmitted ? 'SUCCESS' : step.toUpperCase().replace('_', ' ')}
+        </Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollBody} showsVerticalScrollIndicator={false}>
@@ -282,20 +284,22 @@ export default function TinRegistration({ onClose, onSuccess }) {
         {/* STEP 4: REVIEW AND SUBMIT */}
         {step === 'review_submit' && (
           <View style={styles.checkoutBox}>
-            {generatedTin ? (
+            {isSubmitted ? (
               <View style={styles.successWrapper}>
                 <View style={styles.successCircle}>
-                  <Ionicons name="checkmark-done" size={42} color="#ffffff" />
+                  <Ionicons name="checkbox" size={42} color="#ffffff" />
                 </View>
-                <Text style={styles.taxTitle}>Tax Identification Number Issued</Text>
-                <Text style={styles.tinValue}>{generatedTin}</Text>
-                <Text style={styles.tinDesc}>Your TIN registration profile is fully active on the Federal Joint Tax database.</Text>
+                <Text style={styles.taxTitle}>Filing Details Received</Text>
+                <Text style={styles.successHeadingText}>Processing Underway</Text>
+                <Text style={styles.tinDesc}>
+                  Your parameters have been logged into the administration database. Our team will verify the files and send processing status updates via WhatsApp and Email.
+                </Text>
               </View>
             ) : (
               <View style={{ width: '100%', alignItems: 'center' }}>
                 <Ionicons name="document-text-outline" size={48} color={BRAND_COLOR} style={{ marginBottom: 12 }} />
-                <Text style={styles.sectionTitle}>Review Submission Details</Text>
-                <Text style={styles.checkoutSub}>Please verify parameters before triggering JTB and FIRS portal search queries.</Text>
+                <Text style={styles.sectionTitle}>Review Filing Details</Text>
+                <Text style={styles.checkoutSub}>Please verify all parameters match your paperwork before submitting to operations.</Text>
               </View>
             )}
 
@@ -328,11 +332,11 @@ export default function TinRegistration({ onClose, onSuccess }) {
               </View>
             </View>
 
-            {!generatedTin && (
+            {!isSubmitted && (
               <View style={styles.warningBox}>
-                <Ionicons name="shield-checkmark-outline" size={18} color="#0369a1" style={{ marginRight: 8 }} />
+                <Ionicons name="information-circle-outline" size={18} color="#0369a1" style={{ marginRight: 8, marginTop: 1 }} />
                 <Text style={styles.warningTxt}>
-                  Filing is free. Double-check your details; matching records across CAC & NIMC database sets will trigger automated registration instantly.
+                  Filing applications are processed manually by our operational administrative team. Ensure all documents are clear to guarantee swift processing and validation.
                 </Text>
               </View>
             )}
@@ -349,30 +353,30 @@ export default function TinRegistration({ onClose, onSuccess }) {
             <Text style={styles.primaryBtnTxt}>Continue</Text>
           </Pressable>
         ) : (
-          !generatedTin ? (
+          !isSubmitted ? (
             <Pressable 
-              style={[styles.primaryBtn, isVerifying ? { backgroundColor: '#22c55e' } : null]} 
-              onPress={handleSimulateVerification}
-              disabled={isVerifying}
+              style={[styles.primaryBtn, isSubmitting ? { backgroundColor: '#475569' } : null]} 
+              onPress={handleSubmitToAdmin}
+              disabled={isSubmitting}
             >
-              {isVerifying ? (
+              {isSubmitting ? (
                 <View style={styles.loadingRow}>
                   <ActivityIndicator size="small" color="#ffffff" style={{ marginRight: 10 }} />
-                  <Text style={styles.primaryBtnTxt}>Querying JTB Database...</Text>
+                  <Text style={styles.primaryBtnTxt}>Processing...</Text>
                 </View>
               ) : (
-                <Text style={styles.primaryBtnTxt}>Verify & Generate TIN</Text>
+                <Text style={styles.primaryBtnTxt}>Submit Application</Text>
               )}
             </Pressable>
           ) : (
             <Pressable 
               style={[styles.primaryBtn, { backgroundColor: '#0f172a' }]} 
               onPress={() => {
-                showFormAlert('Download Complete', 'JTB Electronic TIN certificate stored.');
-                if (onClose) onClose();
+                if (onClose) onClose(); 
+                navigation.navigate('HomeScreen'); // Wired up correctly now
               }}
             >
-              <Text style={styles.primaryBtnTxt}>Download Certificate</Text>
+              <Text style={styles.primaryBtnTxt}>Return to Dashboard</Text>
             </Pressable>
           )
         )}
@@ -409,7 +413,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   stepBadge: {
-    backgroundColor: '#f0fdf4',
+    backgroundColor: '#f1f5f9',
     color: BRAND_COLOR,
     fontSize: 10,
     fontWeight: '800',
@@ -559,7 +563,7 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: BRAND_COLOR,
+    backgroundColor: '#22c55e',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
@@ -571,19 +575,20 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     textAlign: 'center',
   },
-  tinValue: {
-    fontSize: 32,
+  successHeadingText: {
+    fontSize: 24,
     fontWeight: '900',
-    color: BRAND_COLOR,
-    letterSpacing: 1.5,
+    color: '#22c55e',
+    letterSpacing: -0.5,
     marginVertical: 4,
   },
   tinDesc: {
-    fontSize: 12,
-    color: '#64748b',
+    fontSize: 13,
+    color: '#475569',
     textAlign: 'center',
-    paddingHorizontal: 20,
-    lineHeight: 16,
+    paddingHorizontal: 12,
+    lineHeight: 18,
+    marginTop: 6
   },
   checkoutSub: {
     fontSize: 13,

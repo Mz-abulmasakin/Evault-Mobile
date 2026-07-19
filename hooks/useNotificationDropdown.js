@@ -25,7 +25,7 @@ export function useNotificationDropdown() {
 
   const handleNotificationPress = (item) => {
     setIsOpen(false);
-    // Mutate unread state locally for immediate UI response
+    // Mutate unread state locally for immediate UI response 
     setNotifications(prev => 
       prev.map(n => n.id === item.id ? { ...n, unread: false } : n)
     );
@@ -34,7 +34,7 @@ export function useNotificationDropdown() {
 
   const handleSeeAllPress = () => {
     setIsOpen(false);
-    Alert.alert("Navigation", "Routing to Dedicated Notification Management Screen.");
+    Alert.alert("Navigation", "Redirecting.");
   };
 
   return {

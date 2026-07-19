@@ -2,6 +2,8 @@
 import React from 'react';
 import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native'; // Added for routing
+import { Ionicons } from '@expo/vector-icons'; // Added for back icon
 
 import { useSupport } from '../hooks/useSupport';
 import { ReferralCard } from '../components/ReferralCard';
@@ -11,6 +13,7 @@ import { FAQ_DATA, SOCIAL_PROFILES, WHATSAPP_CONFIG } from '../data/supportData'
 const BRAND_COLOR = '#2a5fd3';
 
 export default function SupportScreen() {
+  const navigation = useNavigation(); // Instantiate navigation hook
   const {
     expandedFaqId,
     isCopying,
@@ -24,7 +27,18 @@ export default function SupportScreen() {
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <ScrollView showsVerticalScrollIndicator={false}>
         
-        <Text style={styles.screenHeader}>Support Center</Text>
+        {/* --- RESTORED TOP NAVIGATION HEADER ROW --- */}
+        <View style={styles.headerRow}>
+          <TouchableOpacity 
+            style={styles.backButton} 
+            onPress={() => navigation.navigate('HomeScreen')} // Directly points back to Home
+            accessibilityRole="button"
+            accessibilityLabel="Go back to home screen"
+          >
+            <Ionicons name="arrow-back" size={24} color="#0F172A" />
+          </TouchableOpacity>
+          <Text style={styles.screenHeader}>Support Center</Text>
+        </View>
 
         {/* 1. Referral Action System */}
         <ReferralCard 
@@ -83,7 +97,25 @@ export default function SupportScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8FAFC' },
-  screenHeader: { fontSize: 24, fontWeight: '700', color: '#0F172A', paddingHorizontal: 20, marginTop: 16 },
+  
+  // Header Row Layout Configs
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 4,
+  },
+  backButton: {
+    padding: 6,
+    marginRight: 8,
+  },
+  screenHeader: { 
+    fontSize: 22, 
+    fontWeight: '700', 
+    color: '#0F172A' 
+  },
+  
   sectionTitle: { fontSize: 11, fontWeight: '700', color: '#64748B', letterSpacing: 1.2, paddingHorizontal: 20, marginTop: 28, marginBottom: 8 },
   groupCard: { backgroundColor: '#FFFFFF', borderTopWidth: 1, borderBottomWidth: 1, borderColor: '#E2E8F0' },
   

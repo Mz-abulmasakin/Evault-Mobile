@@ -1,0 +1,1 @@
+export const API_BASE_URL = "https://evault-backend-lm13.onrender.com/api/v1";  

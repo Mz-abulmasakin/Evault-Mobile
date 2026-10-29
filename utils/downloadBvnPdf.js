@@ -1,24 +1,16 @@
 
-// src/utils/downloadBvnPdf.js
+ // src/utils/downloadBvnPdf.js
 
 import * as FileSystemLegacy from "expo-file-system/legacy";
-import {
-  Alert,
-  Platform,
-} from "react-native";
-
+import { Alert, Platform } from "react-native";
 import { downloadBvn } from "../api/bvnApi";
 
-/**
- * =========================================================
- * RESPONSE HELPERS
- * =========================================================
- */
+// =========================================================
+// RESPONSE HELPERS
+// =========================================================
 
 function getHeaderValue(headers, key) {
-  if (!headers) {
-    return null;
-  }
+  if (!headers) return null;
 
   if (typeof headers.get === "function") {
     return (
@@ -39,6 +31,10 @@ function getHeaderValue(headers, key) {
   return null;
 }
 
+// =========================================================
+// CONVERT API RESPONSE TO PDF BYTES
+// =========================================================
+
 async function getBinaryBytes(data) {
   if (data instanceof ArrayBuffer) {
     return new Uint8Array(data);
@@ -52,33 +48,46 @@ async function getBinaryBytes(data) {
     );
   }
 
-  if (typeof data === "string") {
-    const base64 = data
-      .replace(
-        /^data:application\/pdf;base64,/i,
-        ""
-      )
-      .trim();
+  // Support Blob responses in web browsers.
+  if (
+    typeof Blob !== "undefined" &&
+    data instanceof Blob
+  ) {
+    return new Uint8Array(await data.arrayBuffer());
+  }
 
-    if (!globalThis.atob) {
+  if (typeof data === "string") {
+    let value = data.trim();
+
+    value = value.replace(
+      /^data:application\/pdf;base64,/i,
+      ""
+    );
+
+    // Support a raw PDF binary string.
+    if (value.startsWith("%PDF-")) {
+      const bytes = new Uint8Array(value.length);
+
+      for (let i = 0; i < value.length; i += 1) {
+        bytes[i] = value.charCodeAt(i) & 0xff;
+      }
+
+      return bytes;
+    }
+
+    value = value.replace(/\s/g, "");
+
+    if (typeof globalThis.atob !== "function") {
       throw new Error(
         "Base64 decoding is unavailable on this device."
       );
     }
 
-    const binary =
-      globalThis.atob(base64);
+    const binary = globalThis.atob(value);
+    const bytes = new Uint8Array(binary.length);
 
-    const bytes =
-      new Uint8Array(binary.length);
-
-    for (
-      let i = 0;
-      i < binary.length;
-      i += 1
-    ) {
-      bytes[i] =
-        binary.charCodeAt(i);
+    for (let i = 0; i < binary.length; i += 1) {
+      bytes[i] = binary.charCodeAt(i);
     }
 
     return bytes;
@@ -88,6 +97,10 @@ async function getBinaryBytes(data) {
     "The BVN PDF response is not binary data."
   );
 }
+
+// =========================================================
+// VALIDATE PDF
+// =========================================================
 
 function isPdfBytes(bytes) {
   if (!bytes || bytes.length < 5) {
@@ -103,65 +116,119 @@ function isPdfBytes(bytes) {
   );
 }
 
+// =========================================================
+// BASE64 CONVERSION FOR NATIVE STORAGE
+// =========================================================
+
 function bytesToBase64(bytes) {
   const chunkSize = 0x8000;
-
   let binary = "";
 
-  for (
-    let i = 0;
-    i < bytes.length;
-    i += chunkSize
-  ) {
-    const chunk =
-      bytes.subarray(
-        i,
-        Math.min(
-          i + chunkSize,
-          bytes.length
-        )
-      );
-
-    binary += String.fromCharCode(
-      ...chunk
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.subarray(
+      i,
+      Math.min(i + chunkSize, bytes.length)
     );
+
+    binary += String.fromCharCode(...chunk);
   }
 
   return globalThis.btoa(binary);
 }
 
-function makeSafeFileName(
-  identifier,
-  requestedName
-) {
+// =========================================================
+// SAFE FILE NAME
+// =========================================================
+
+function makeSafeFileName(identifier, requestedName) {
   let fileName =
-    requestedName ||
-    `BVN-${identifier}.pdf`;
+    requestedName || `BVN-${identifier}.pdf`;
 
   fileName = String(fileName)
     .replace(/[\\/:*?"<>|]/g, "-")
     .trim();
 
-  if (
-    !fileName
-      .toLowerCase()
-      .endsWith(".pdf")
-  ) {
+  if (!fileName.toLowerCase().endsWith(".pdf")) {
     fileName += ".pdf";
   }
 
   return fileName;
 }
 
-/**
- * =========================================================
- * ANDROID PUBLIC STORAGE
- * =========================================================
- *
- * Uses the same Storage Access Framework approach
- * as the working NIN downloader.
- * =========================================================
- */
+// =========================================================
+// WEB BROWSER DOWNLOAD
+// =========================================================
+
+function downloadInBrowser(bytes, fileName) {
+  if (
+    typeof window === "undefined" ||
+    typeof document === "undefined"
+  ) {
+    throw new Error(
+      "The browser download environment is unavailable."
+    );
+  }
+
+  if (
+    typeof Blob === "undefined" ||
+    typeof URL === "undefined" ||
+    typeof URL.createObjectURL !== "function"
+  ) {
+    throw new Error(
+      "Your browser does not support downloading this PDF."
+    );
+  }
+
+  console.log(
+    "[BVN DOWNLOAD] Starting browser PDF download:",
+    fileName
+  );
+
+  const pdfBlob = new Blob(
+    [bytes],
+    { type: "application/pdf" }
+  );
+
+  const objectUrl = URL.createObjectURL(pdfBlob);
+  const link = document.createElement("a");
+
+  link.href = objectUrl;
+  link.download = fileName;
+  link.style.display = "none";
+  link.setAttribute("aria-hidden", "true");
+
+  document.body.appendChild(link);
+
+  try {
+    link.click();
+  } finally {
+    link.remove();
+  }
+
+  // Keep the temporary URL alive while the browser
+  // begins processing the file download.
+  window.setTimeout(() => {
+    URL.revokeObjectURL(objectUrl);
+  }, 60000);
+
+  console.log(
+    "[BVN DOWNLOAD] Browser download initiated."
+  );
+
+  return {
+    uri: objectUrl,
+    fileUri: objectUrl,
+    fileName,
+    size: bytes.length,
+    public: true,
+    shared: false,
+    downloadMethod: "browser",
+  };
+}
+
+// =========================================================
+// ANDROID PUBLIC STORAGE
+// =========================================================
 
 async function saveToAndroidPublicDirectory(
   bytes,
@@ -180,8 +247,8 @@ async function saveToAndroidPublicDirectory(
 
   try {
     if (
-      typeof StorageAccessFramework.getUriForDirectoryInRoot ===
-      "function"
+      typeof StorageAccessFramework
+        .getUriForDirectoryInRoot === "function"
     ) {
       initialDirectory =
         StorageAccessFramework.getUriForDirectoryInRoot(
@@ -190,17 +257,13 @@ async function saveToAndroidPublicDirectory(
     }
   } catch (error) {
     console.log(
-      "[BVN DOWNLOAD] Could not resolve Download folder root:",
+      "[BVN DOWNLOAD] Could not resolve Download folder:",
       error?.message || error
     );
   }
 
   console.log(
-    "[BVN DOWNLOAD] using Android Storage Access Framework"
-  );
-
-  console.log(
-    "[BVN DOWNLOAD] opening public-folder picker..."
+    "[BVN DOWNLOAD] Opening public-folder picker..."
   );
 
   const permission =
@@ -214,17 +277,14 @@ async function saveToAndroidPublicDirectory(
     );
   }
 
-  const directoryUri =
-    permission.directoryUri;
+  const directoryUri = permission.directoryUri;
 
   if (!directoryUri) {
-    throw new Error(
-      "No Android folder was selected."
-    );
+    throw new Error("No Android folder was selected.");
   }
 
   console.log(
-    "[BVN DOWNLOAD] selected public directory:",
+    "[BVN DOWNLOAD] Selected directory:",
     directoryUri
   );
 
@@ -235,47 +295,36 @@ async function saveToAndroidPublicDirectory(
       "application/pdf"
     );
 
-  console.log(
-    "[BVN DOWNLOAD] PUBLIC PDF URI:",
-    fileUri
-  );
-
-  const base64 =
-    bytesToBase64(bytes);
+  const base64 = bytesToBase64(bytes);
 
   await FileSystemLegacy.writeAsStringAsync(
     fileUri,
     base64,
     {
-      encoding:
-        FileSystemLegacy.EncodingType.Base64,
+      encoding: FileSystemLegacy.EncodingType.Base64,
     }
   );
 
   console.log(
-    "[BVN DOWNLOAD] PUBLIC PDF WRITE COMPLETE"
+    "[BVN DOWNLOAD] Public PDF write complete."
   );
 
   const savedBase64 =
     await FileSystemLegacy.readAsStringAsync(
       fileUri,
       {
-        encoding:
-          FileSystemLegacy.EncodingType.Base64,
+        encoding: FileSystemLegacy.EncodingType.Base64,
       }
     );
 
-  if (
-    !savedBase64 ||
-    savedBase64.length < 100
-  ) {
+  if (!savedBase64 || savedBase64.length < 100) {
     throw new Error(
       "The saved BVN PDF could not be verified."
     );
   }
 
   console.log(
-    "[BVN DOWNLOAD] PUBLIC PDF VERIFIED"
+    "[BVN DOWNLOAD] Public PDF verified."
   );
 
   return {
@@ -288,19 +337,12 @@ async function saveToAndroidPublicDirectory(
   };
 }
 
-/**
- * =========================================================
- * PRIVATE STORAGE
- * =========================================================
- */
+// =========================================================
+// IOS / OTHER NATIVE PRIVATE STORAGE
+// =========================================================
 
-async function saveToPrivateStorage(
-  bytes,
-  fileName
-) {
-  if (
-    !FileSystemLegacy.documentDirectory
-  ) {
+async function saveToPrivateStorage(bytes, fileName) {
+  if (!FileSystemLegacy.documentDirectory) {
     throw new Error(
       "Expo document storage is unavailable."
     );
@@ -309,15 +351,13 @@ async function saveToPrivateStorage(
   const fileUri =
     `${FileSystemLegacy.documentDirectory}${fileName}`;
 
-  const base64 =
-    bytesToBase64(bytes);
+  const base64 = bytesToBase64(bytes);
 
   await FileSystemLegacy.writeAsStringAsync(
     fileUri,
     base64,
     {
-      encoding:
-        FileSystemLegacy.EncodingType.Base64,
+      encoding: FileSystemLegacy.EncodingType.Base64,
     }
   );
 
@@ -331,11 +371,9 @@ async function saveToPrivateStorage(
   };
 }
 
-/**
- * =========================================================
- * MAIN BVN DOWNLOAD
- * =========================================================
- */
+// =========================================================
+// MAIN BVN PDF DOWNLOAD
+// =========================================================
 
 export async function downloadBvnPdf(
   identifier,
@@ -348,15 +386,15 @@ export async function downloadBvnPdf(
   }
 
   console.log(
-    "[BVN DOWNLOAD] starting download for:",
+    "[BVN DOWNLOAD] Starting download for:",
     identifier
   );
 
   let response;
 
+  // Step 1: Use the existing BVN API.
   try {
-    response =
-      await downloadBvn(identifier);
+    response = await downloadBvn(identifier);
   } catch (error) {
     console.error(
       "[BVN DOWNLOAD] API request failed:",
@@ -372,46 +410,41 @@ export async function downloadBvnPdf(
     );
   }
 
-  const contentType =
-    getHeaderValue(
-      response?.headers,
-      "content-type"
-    );
+  const contentType = getHeaderValue(
+    response?.headers,
+    "content-type"
+  );
 
-  const contentDisposition =
-    getHeaderValue(
-      response?.headers,
-      "content-disposition"
-    );
+  const contentDisposition = getHeaderValue(
+    response?.headers,
+    "content-disposition"
+  );
 
-  const responseRequestId =
-    getHeaderValue(
-      response?.headers,
-      "x-bvn-request-id"
-    );
+  const responseRequestId = getHeaderValue(
+    response?.headers,
+    "x-bvn-request-id"
+  );
 
   console.log(
-    "[BVN DOWNLOAD] content-type:",
+    "[BVN DOWNLOAD] Content-Type:",
     contentType
   );
 
   console.log(
-    "[BVN DOWNLOAD] content-disposition:",
+    "[BVN DOWNLOAD] Content-Disposition:",
     contentDisposition
   );
 
   console.log(
-    "[BVN DOWNLOAD] x-bvn-request-id:",
+    "[BVN DOWNLOAD] Request ID:",
     responseRequestId
   );
 
-  const bytes =
-    await getBinaryBytes(
-      response?.data
-    );
+  // Step 2: Convert and validate the PDF.
+  const bytes = await getBinaryBytes(response?.data);
 
   console.log(
-    "[BVN DOWNLOAD] byte length:",
+    "[BVN DOWNLOAD] PDF byte length:",
     bytes.length
   );
 
@@ -422,27 +455,35 @@ export async function downloadBvnPdf(
   }
 
   const resolvedRequestId =
-    responseRequestId ||
-    identifier;
+    responseRequestId || identifier;
 
-  const fileName =
-    makeSafeFileName(
-      resolvedRequestId,
-      options?.fileName
-    );
+  const fileName = makeSafeFileName(
+    resolvedRequestId,
+    options?.fileName
+  );
 
   console.log(
-    "[BVN DOWNLOAD] file name:",
+    "[BVN DOWNLOAD] File name:",
     fileName
   );
 
-  /**
-   * Android:
-   * Save to a public folder exactly like NIN.
-   */
-  if (
-    Platform.OS === "android"
-  ) {
+  // Step 3: WEB — download through the browser.
+  if (Platform.OS === "web") {
+    const saved = downloadInBrowser(
+      bytes,
+      fileName
+    );
+
+    return {
+      success: true,
+      identifier,
+      requestId: resolvedRequestId,
+      ...saved,
+    };
+  }
+
+  // Step 4: ANDROID — preserve existing public-folder flow.
+  if (Platform.OS === "android") {
     const saved =
       await saveToAndroidPublicDirectory(
         bytes,
@@ -457,21 +498,16 @@ export async function downloadBvnPdf(
     return {
       success: true,
       identifier,
-      requestId:
-        resolvedRequestId,
+      requestId: resolvedRequestId,
       ...saved,
     };
   }
 
-  /**
-   * iOS / other platforms:
-   * Save privately.
-   */
-  const saved =
-    await saveToPrivateStorage(
-      bytes,
-      fileName
-    );
+  // Step 5: iOS and other native platforms.
+  const saved = await saveToPrivateStorage(
+    bytes,
+    fileName
+  );
 
   Alert.alert(
     "BVN Slip Saved",
@@ -481,8 +517,7 @@ export async function downloadBvnPdf(
   return {
     success: true,
     identifier,
-    requestId:
-      resolvedRequestId,
+    requestId: resolvedRequestId,
     ...saved,
   };
 }

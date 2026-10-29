@@ -1,5 +1,5 @@
 
-// components/TransactionReceipt.js
+ // components/TransactionReceipt.js
 
 import React, { useRef, useState } from "react";
 
@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -44,6 +45,44 @@ function formatDate(value) {
     dateStyle: "medium",
     timeStyle: "short",
   });
+}
+
+// =========================================================
+// BROWSER DOWNLOAD HELPER
+// =========================================================
+
+function downloadReceiptImage(imageDataUri, fileName) {
+  if (
+    typeof document === "undefined" ||
+    typeof window === "undefined"
+  ) {
+    throw new Error(
+      "The browser download environment is unavailable."
+    );
+  }
+
+  if (
+    typeof imageDataUri !== "string" ||
+    !imageDataUri.startsWith("data:image/")
+  ) {
+    throw new Error(
+      "The receipt image could not be generated for download."
+    );
+  }
+
+  const link = document.createElement("a");
+
+  link.href = imageDataUri;
+  link.download = fileName;
+  link.style.display = "none";
+
+  document.body.appendChild(link);
+
+  try {
+    link.click();
+  } finally {
+    link.remove();
+  }
 }
 
 // =========================================================
@@ -158,7 +197,6 @@ export default function TransactionReceipt({
     transaction?.createdAt ||
     notification?.created_at ||
     metadata?.created_at ||
-    metadata?.date ||
     new Date();
 
   const receiptType =
@@ -177,7 +215,7 @@ export default function TransactionReceipt({
     subtitle;
 
   // =======================================================
-  // SHARE RECEIPT AS AN IMAGE
+  // SHARE OR DOWNLOAD RECEIPT IMAGE
   // =======================================================
 
   const handleShareReceipt = async () => {
@@ -194,21 +232,34 @@ export default function TransactionReceipt({
         );
       }
 
-      const available = await Sharing.isAvailableAsync();
+      const isWeb = Platform.OS === "web";
 
-      if (!available) {
-        throw new Error(
-          "Image sharing is unavailable on this device."
-        );
+      // Native platforms use Expo Sharing.
+      // Web uses a browser download instead.
+      if (!isWeb) {
+        const available =
+          await Sharing.isAvailableAsync();
+
+        if (!available) {
+          throw new Error(
+            "Image sharing is unavailable on this device."
+          );
+        }
       }
 
-      // Capture the visible receipt card into a PNG file.
+      console.log(
+        "[EVAULT RECEIPT] Capturing receipt image..."
+      );
+
       const imageUri = await captureRef(
         receiptImageRef,
         {
           format: "png",
           quality: 1,
-          result: "tmpfile",
+
+          // Web must use a data URI.
+          // Native platforms use a temporary file.
+          result: isWeb ? "data-uri" : "tmpfile",
         }
       );
 
@@ -219,29 +270,71 @@ export default function TransactionReceipt({
       }
 
       console.log(
-        "[EVAULT RECEIPT] PNG image ready:",
-        imageUri
+        "[EVAULT RECEIPT] Receipt image created."
       );
 
-      // Share the image itself, not a text representation.
+      // ---------------------------------------------------
+      // WEB: DOWNLOAD PNG DIRECTLY TO THE COMPUTER
+      // ---------------------------------------------------
+
+      if (isWeb) {
+        const safeReference = String(
+          receiptReference || "transaction"
+        )
+          .replace(/[^a-zA-Z0-9_-]/g, "-")
+          .slice(0, 60);
+
+        const fileName =
+          `eVault-Receipt-${safeReference}.png`;
+
+        downloadReceiptImage(
+          imageUri,
+          fileName
+        );
+
+        console.log(
+          "[EVAULT RECEIPT] Browser download initiated:",
+          fileName
+        );
+
+        return;
+      }
+
+      // ---------------------------------------------------
+      // ANDROID / IOS: SHARE THE IMAGE FILE
+      // ---------------------------------------------------
+
       await Sharing.shareAsync(imageUri, {
         mimeType: "image/png",
         dialogTitle: "Share eVault Receipt",
         UTI: "public.png",
       });
+
     } catch (error) {
       console.error(
-        "[EVAULT RECEIPT] Image sharing failed:",
+        "[EVAULT RECEIPT] Image operation failed:",
         error?.message || error
       );
 
-      Alert.alert(
-        "Unable to Share Receipt",
+      const message =
         error?.message ||
-          "Could not share the receipt image. Please try again."
-      );
+        "Could not process the receipt image. Please try again.";
+
+      if (
+        Platform.OS === "web" &&
+        typeof window !== "undefined"
+      ) {
+        window.alert(
+          `Unable to download receipt: ${message}`
+        );
+      } else {
+        Alert.alert(
+          "Unable to Share Receipt",
+          message
+        );
+      }
     } finally {
-      // A cancelled share also stops the loading indicator.
+      // Reset whether the user shares, cancels, or downloads.
       setSharing(false);
     }
   };
@@ -276,6 +369,7 @@ export default function TransactionReceipt({
     >
       <View style={styles.overlay}>
         <View style={styles.modal}>
+
           {/* HEADER */}
 
           <View style={styles.header}>
@@ -313,9 +407,7 @@ export default function TransactionReceipt({
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
           >
-            {/* =================================================
-                THIS CARD IS THE IMAGE WE SHARE
-            ================================================= */}
+            {/* RECEIPT IMAGE CONTENT */}
 
             <View
               ref={receiptImageRef}
@@ -446,7 +538,7 @@ export default function TransactionReceipt({
                 />
               </View>
 
-              {/* FOOTER INCLUDED IN IMAGE */}
+              {/* FOOTER */}
 
               <View style={styles.receiptFooter}>
                 <Text style={styles.footerMessage}>
@@ -463,9 +555,7 @@ export default function TransactionReceipt({
               </View>
             </View>
 
-            {/* =================================================
-                ACTIONS ARE NOT PART OF THE CAPTURED IMAGE
-            ================================================= */}
+            {/* ACTIONS: OUTSIDE THE CAPTURED RECEIPT */}
 
             <Pressable
               style={[
@@ -480,7 +570,11 @@ export default function TransactionReceipt({
                 <ActivityIndicator color="#FFFFFF" />
               ) : (
                 <Ionicons
-                  name="image-outline"
+                  name={
+                    Platform.OS === "web"
+                      ? "download-outline"
+                      : "image-outline"
+                  }
                   size={21}
                   color="#FFFFFF"
                 />
@@ -489,7 +583,9 @@ export default function TransactionReceipt({
               <Text style={styles.shareButtonText}>
                 {sharing
                   ? "Preparing Image..."
-                  : "Share Receipt Image"}
+                  : Platform.OS === "web"
+                    ? "Download Receipt Image"
+                    : "Share Receipt Image"}
               </Text>
             </Pressable>
 
@@ -616,8 +712,6 @@ const styles = StyleSheet.create({
     paddingTop: 18,
     paddingBottom: 30,
   },
-
-  // IMAGE CARD
 
   receiptCard: {
     width: "100%",
@@ -819,8 +913,6 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     marginTop: 10,
   },
-
-  // ACTION BUTTONS
 
   shareButton: {
     width: "100%",

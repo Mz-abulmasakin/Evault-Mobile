@@ -1,9 +1,10 @@
+
 {
   "expo": {
-    "name": "EvaultApp",
+    "name": "eVault",
     "slug": "evaultapp",
     "scheme": "evault",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -25,12 +26,31 @@
     "plugins": [
       "expo-status-bar",
       "expo-secure-store",
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 120,
+          "backgroundColor": "#2A5FD3",
+          "dark": {
+            "image": "./assets/splash-icon.png",
+            "backgroundColor": "#2A5FD3"
+          }
+        }
+      ]
     ],
     "extra": {
       "eas": {
-        "projectId": "8da52499-809b-4d4a-8588-75c777624825"
+        "projectId": "b03f0817-19b8-4f17-87fe-a15d277dddc0"
       }
+    },
+    "owner": "ziyau.hak",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/b03f0817-19b8-4f17-87fe-a15d277dddc0"
     }
   }
 }

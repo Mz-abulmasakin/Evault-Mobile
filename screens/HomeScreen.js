@@ -1,5 +1,5 @@
 
-// src/screens/HomeScreen.jsx
+// screens/HomeScreen.js
 
 import React, {
   useCallback,
@@ -33,9 +33,11 @@ import {
 
 import PromoCarousel from "../components/Advert-slide";
 import AirtimePurchaseModal from "../components/AirtimePurchaseModal";
+import BvnRecoveryModal from "../components/BvnRecoveryModal";
 import BvnValidationModal from "../components/BvnValidationModal";
 import CableTVModal from "../components/CableTVModal";
 import DataPurchaseModal from "../components/DataPurchaseModal";
+import ExaminationResultPinModal from "../components/ExaminationResultPinModal";
 import HomeScreenHeader from "../components/HomeScreenHeader";
 import ManualFundingBanner from "../components/ManualFundingBanner";
 import NinRecoveryModal from "../components/NinRecoveryModal";
@@ -54,7 +56,7 @@ const WHATSAPP_GREEN = "#25D366";
 // WHATSAPP
 // =========================================================
 
-const WHATSAPP_AGENT_NUMBER = "2348140332887";
+const WHATSAPP_AGENT_NUMBER = "2347084382293";
 
 const WHATSAPP_COMMUNITY_URL =
   "https://chat.whatsapp.com/DAETBeqWEK37amKsrS0U2b?s=sh&p=a&mlu=4&ilr=4";
@@ -138,14 +140,25 @@ export default function HomeScreen() {
   const [cableTvVisible, setCableTvVisible] =
     useState(false);
 
+  // Exam Result PIN modal
+  const [examResultPinVisible, setExamResultPinVisible] =
+    useState(false);
+
+  // Verify BVN modal
   const [bvnVisible, setBvnVisible] =
     useState(false);
 
+  // Recover BVN modal
+  const [bvnRecoveryVisible, setBvnRecoveryVisible] =
+    useState(false);
+
+  // Verify NIN modal
   const [
     ninVerificationVisible,
     setNinVerificationVisible,
   ] = useState(false);
 
+  // Recover NIN modal
   const [
     ninRecoveryVisible,
     setNinRecoveryVisible,
@@ -181,6 +194,28 @@ export default function HomeScreen() {
   }, []);
 
   // =======================================================
+  // BVN MODAL HANDLERS
+  // =======================================================
+
+  const openBvnVerification = useCallback(() => {
+    setBvnRecoveryVisible(false);
+    setBvnVisible(true);
+  }, []);
+
+  const openBvnRecovery = useCallback(() => {
+    setBvnVisible(false);
+    setBvnRecoveryVisible(true);
+  }, []);
+
+  // =======================================================
+  // EXAM RESULT PIN MODAL HANDLER
+  // =======================================================
+
+  const openExamResultPin = useCallback(() => {
+    setExamResultPinVisible(true);
+  }, []);
+
+  // =======================================================
   // PROMO CAROUSEL ACTIONS
   // =======================================================
 
@@ -192,7 +227,7 @@ export default function HomeScreen() {
           break;
 
         case "2":
-          setBvnVisible(true);
+          openBvnVerification();
           break;
 
         case "3":
@@ -212,7 +247,11 @@ export default function HomeScreen() {
           break;
       }
     },
-    [navigation, openNinRecovery]
+    [
+      navigation,
+      openNinRecovery,
+      openBvnVerification,
+    ]
   );
 
   // =======================================================
@@ -354,17 +393,23 @@ export default function HomeScreen() {
               }
             />
 
+            {/* VERIFY BVN */}
+
             <ServiceItem
               icon="finger-print-outline"
               label="Verify BVN"
-              onPress={() => setBvnVisible(true)}
+              onPress={openBvnVerification}
             />
+
+            {/* RECOVER BVN */}
 
             <ServiceItem
               icon="search-outline"
               label="Recover BVN"
-              onPress={() => setBvnVisible(true)}
+              onPress={openBvnRecovery}
             />
+
+            {/* VERIFY NIN */}
 
             <ServiceItem
               icon="id-card-outline"
@@ -372,11 +417,15 @@ export default function HomeScreen() {
               onPress={openNinVerification}
             />
 
+            {/* RECOVER NIN */}
+
             <ServiceItem
               icon="search-outline"
               label="Recover NIN"
               onPress={openNinRecovery}
             />
+
+            {/* NIN VALIDATION */}
 
             <ServiceItem
               icon="checkmark-circle-outline"
@@ -386,13 +435,15 @@ export default function HomeScreen() {
               }
             />
 
+            {/* EXAM RESULT PIN */}
+
             <ServiceItem
               icon="school-outline"
               label="Exam Result PIN"
-              onPress={() =>
-                showComingSoon("Exam Result PIN")
-              }
+              onPress={openExamResultPin}
             />
+
+            {/* MORE */}
 
             <ServiceItem
               icon="grid-outline"
@@ -496,15 +547,35 @@ export default function HomeScreen() {
         onClose={() => setCableTvVisible(false)}
       />
 
+      {/* EXAMINATION RESULT PIN MODAL */}
+
+      <ExaminationResultPinModal
+        visible={examResultPinVisible}
+        onClose={() => setExamResultPinVisible(false)}
+      />
+
+      {/* VERIFY BVN MODAL */}
+
       <BvnValidationModal
         visible={bvnVisible}
         onClose={() => setBvnVisible(false)}
       />
 
+      {/* RECOVER BVN MODAL */}
+
+      <BvnRecoveryModal
+        visible={bvnRecoveryVisible}
+        onClose={() => setBvnRecoveryVisible(false)}
+      />
+
+      {/* VERIFY NIN MODAL */}
+
       <NinVerificationModal
         visible={ninVerificationVisible}
         onClose={() => setNinVerificationVisible(false)}
       />
+
+      {/* RECOVER NIN MODAL */}
 
       <NinRecoveryModal
         visible={ninRecoveryVisible}
@@ -530,8 +601,6 @@ function ServiceItem({
       accessibilityRole="button"
       accessibilityLabel={label}
     >
-      {/* ORIGINAL CIRCULAR SERVICE ICON STYLE */}
-
       <View style={styles.serviceIcon}>
         <Ionicons
           name={icon}
@@ -566,7 +635,6 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
   },
 
-  // Small gap between UserCard and ManualFundingBanner.
   cardContentWrapper: {
     width: "100%",
     marginBottom: 8,
@@ -664,9 +732,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: "hidden",
   },
-
-  // Keep your original 40 x 40 circular icons.
-  // No pressed-state background or label-color styles.
 
   serviceIcon: {
     width: 40,

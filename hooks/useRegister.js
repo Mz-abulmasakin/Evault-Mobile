@@ -1,8 +1,8 @@
 
 import { useState } from "react";
 import { Alert, Platform } from "react-native";
-import { register } from "../services/authService";
 
+import { register } from "../services/authService";
 
 export function showAlert(title, message) {
   if (Platform.OS === "web") {
@@ -12,9 +12,7 @@ export function showAlert(title, message) {
   }
 }
 
-
 export default function useRegister(navigation) {
-
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
@@ -22,12 +20,15 @@ export default function useRegister(navigation) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
 
+  function goToLogin() {
+    if (navigation?.replace) {
+      navigation.replace("LoginScreen");
+    } else if (navigation?.navigate) {
+      navigation.navigate("LoginScreen");
+    }
+  }
 
-  const handleRegister = async () => {
-
-    /**
-     * Validate form
-     */
+  async function handleRegister() {
     if (
       !fullName.trim() ||
       !username.trim() ||
@@ -36,22 +37,16 @@ export default function useRegister(navigation) {
       !password.trim()
     ) {
       showAlert(
-        "Validation",
-        "Please fill in all fields."
+        "Incomplete Details",
+        "Please fill in all registration fields."
       );
 
       return;
     }
 
-
     try {
-
       setLoading(true);
 
-
-      /**
-       * Register user
-       */
       const response = await register({
         fullName: fullName.trim(),
         username: username.trim(),
@@ -60,63 +55,58 @@ export default function useRegister(navigation) {
         password,
       });
 
-
       console.log(
         "Registration Response:",
         response
       );
 
+      const message =
+        "Congratulations! Your eVault account has been created successfully.\n\n" +
+        "Please log in to continue. After logging in, submit your BVN or NIN " +
+        "in your profile to proceed with creating your dedicated bank account.";
 
-      showAlert(
-        "Registration Successful",
-        "Your account has been created successfully. Please log in to continue."
-      );
-
-
-      /**
-       * Go to login
-       */
-      if (navigation?.replace) {
-
-        navigation.replace("LoginScreen");
-
-      } else if (navigation?.navigate) {
-
-        navigation.navigate("LoginScreen");
-
+      if (Platform.OS === "web") {
+        showAlert("Congratulations!", message);
+        goToLogin();
+      } else {
+        Alert.alert(
+          "Congratulations!",
+          message,
+          [
+            {
+              text: "Continue to Login",
+              onPress: goToLogin,
+            },
+          ],
+          {
+            cancelable: false,
+          }
+        );
       }
-
-
     } catch (error) {
-
-      console.log(
+      console.error(
         "Registration Error:",
-        error.response?.data || error.message
+        error?.response?.data ||
+          error?.message ||
+          error
       );
-
 
       const message =
-        error.response?.data?.message ||
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
         "Registration failed. Please try again.";
-
 
       showAlert(
         "Registration Failed",
         message
       );
-
-
     } finally {
-
       setLoading(false);
-
     }
-
-  };
-
+  }
 
   return {
-
     username,
     setUsername,
 
@@ -133,10 +123,6 @@ export default function useRegister(navigation) {
     setPhoneNumber,
 
     loading,
-
     handleRegister,
-
   };
-
 }
-

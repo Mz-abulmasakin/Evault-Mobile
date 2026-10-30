@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons'; // Standard Expo Vector Icons
 
 // --- CUSTOM COMPONENT IMPORTS ---
 import UserCard from '../components/UserCard';
-import Videocomponents from '../components/VideoComponents'; 
+//import Videocomponents from '../components/VideoComponents'; 
 
 function showAlert(message) {
   if (Platform.OS === 'web') {

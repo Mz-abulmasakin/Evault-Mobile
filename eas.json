@@ -1,6 +1,7 @@
+
 {
   "cli": {
-    "version": ">= 21.0.2",
+    "version": ">= 25.2.0",
     "appVersionSource": "remote"
   },
   "build": {
@@ -10,14 +11,10 @@
     },
     "preview": {
       "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      },
-      "env": {
-        "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
-      }
+      "channel": "preview"
     },
     "production": {
+      "node": "24.17.0",
       "autoIncrement": true
     }
   },

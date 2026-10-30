@@ -1,270 +1,615 @@
-import React, { useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { 
-  StyleSheet, Text, View, Pressable, Platform, Alert, Image, 
-  TextInput, KeyboardAvoidingView, ScrollView 
-} from 'react-native';
-import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
+// src/screens/RegisterScreen.jsx
 
-function showAlert(message) {
-  if (Platform.OS === 'web') {
-    window.alert(message);
-  } else {
-    Alert.alert(message);
-  }
-}
+import React, { useState } from "react";
 
-const topLogo = require('../assets/evault-logo.png');
+import {
+  ActivityIndicator,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
-export default function App({navigation}) {
-  const [username, setUsername] = useState('');
-  const [fullname, setfullname] = useState('');
-  const [password, setPassword] = useState('');
-   const [email, setEmail] = useState('');
-    const [phoneNumber, setPhoneNumber] = useState('');
-    
+import { Ionicons } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+import useRegister from "../hooks/useRegister";
+
+const topLogo = require("../assets/evault-logo.png");
+
+const BRAND = "#264BC5";
+const BRAND_DARK = "#1D3CA0";
+const BRAND_LIGHT = "#EEF3FF";
+
+export default function Register({ navigation }) {
+  const {
+    username,
+    setUsername,
+
+    fullName,
+    setFullName,
+
+    password,
+    setPassword,
+
+    email,
+    setEmail,
+
+    phoneNumber,
+    setPhoneNumber,
+
+    loading,
+
+    handleRegister,
+  } = useRegister(navigation);
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  // =====================================================
+  // REUSABLE INPUT FIELD
+  // =====================================================
+
+  const renderInput = ({
+    label,
+    icon,
+    value,
+    onChangeText,
+    placeholder,
+    keyboardType = "default",
+    autoCapitalize = "none",
+    autoComplete,
+    autoCorrect = false,
+    secureTextEntry = false,
+    rightAction,
+    returnKeyType = "next",
+    maxLength,
+  }) => (
+    <View style={styles.inputGroup}>
+      <Text style={styles.inputLabel}>
+        {label}
+      </Text>
+
+      <View style={styles.inputWrapper}>
+        <Ionicons
+          name={icon}
+          size={19}
+          color="#8492A8"
+          style={styles.inputIcon}
+        />
+
+        <TextInput
+          style={styles.input}
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          placeholderTextColor="#9AA6B8"
+          keyboardType={keyboardType}
+          autoCapitalize={autoCapitalize}
+          autoComplete={autoComplete}
+          autoCorrect={autoCorrect}
+          secureTextEntry={secureTextEntry}
+          returnKeyType={returnKeyType}
+          maxLength={maxLength}
+          underlineColorAndroid="transparent"
+          textAlignVertical="center"
+          selectionColor={BRAND}
+          editable={!loading}
+        />
+
+        {rightAction || null}
+      </View>
+    </View>
+  );
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.container}>
-        <StatusBar style="dark" />
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-          style={{ flex: 1 }}
+    <SafeAreaView
+      style={styles.safeArea}
+      edges={["top", "left", "right"]}
+    >
+      <StatusBar style="dark" />
+
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={
+          Platform.OS === "ios"
+            ? "padding"
+            : "height"
+        }
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          bounces={false}
         >
-          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-            
-            {/* Top Branding Header */}
+          {/* BRAND HEADER */}
+
+          <View style={styles.brandHeader}>
             <View style={styles.logoContainer}>
-              <Image style={styles.headerLogo} source={topLogo} />
+              <Image
+                style={styles.logo}
+                source={topLogo}
+              />
             </View>
 
-            <Text style={styles.title}>eVault Cooperate</Text>
-            <Text style={styles.subtitle}>Get Started to eVault Cooperate World, We Business meets solutions and growth</Text>
+            <Text style={styles.brandTitle}>
+              eVault Corporate
+            </Text>
 
-            {/* Login Form Container Card */}
-            <View style={styles.formContainer}>
-              
-              {/* Username Input Field */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Username</Text>
-                <TextInput 
-                  placeholder='Enter your username' 
-                  placeholderTextColor="#94a3b8"
-                  style={styles.input} 
-                  value={username}
-                  onChangeText={setUsername}
-                  autoCapitalize="none"
-                />
-              </View>
+            <Text style={styles.brandSubtitle}>
+              Business services, made simpler.
+            </Text>
+          </View>
 
-               {/* Fullname Input Field */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Fullname</Text>
-                <TextInput 
-                  placeholder='Enter your Fullname' 
-                  placeholderTextColor="#94a3b8"
-                  style={styles.input} 
-                  value={fullname}
-                  onChangeText={setfullname}
-                  autoCapitalize="none"
-                />
-              </View> 
+          {/* REGISTRATION FORM */}
 
-              {/* Password Input Field */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Password</Text>
-                <TextInput 
-                  placeholder='Enter your password' 
-                  placeholderTextColor="#94a3b8"
-                  secureTextEntry={true}
-                  style={styles.input} 
-                  value={password}
-                  onChangeText={setPassword}
-                  autoCapitalize="none"
-                />
-              </View>
+          <View style={styles.formCard}>
+            <View style={styles.formHeading}>
+              <Text style={styles.formTitle}>
+                Create your account
+              </Text>
 
-              {/* email Input Field */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Email</Text>
-                <TextInput 
-                  placeholder='Enter your email' 
-                  placeholderTextColor="#94a3b8"
-                  style={styles.input} 
-                  value={email}
-                  onChangeText={setEmail}
-                  autoCapitalize="none"
-                />
-              </View>
-
-               {/* phone Input Field */}
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Phone Number (Whatsapp Active Number)</Text>
-                <TextInput 
-                  placeholder='Enter your Whatsapp Number' 
-                  placeholderTextColor="#94a3b8"
-                  style={styles.input} 
-                  value={phoneNumber}
-                  onChangeText={setPhoneNumber}
-                  autoCapitalize="none"
-                />
-              </View>
-
-             
-
-              {/* Primary Login Button */}
-              <Pressable 
-                style={({ pressed }) => [
-                  styles.primaryButton, 
-                  { transform: [{ scale: pressed ? 0.98 : 1 }] }
-                ]} 
-                onPress={() => {
-                  showAlert(`Registration Successful: ${username}`); setTimeout(() => navigation.navigate('HomeScreen'),2000);}}
-              >
-                <Text style={styles.primaryButtonText}>Register</Text>
-              </Pressable>
-
+              <Text style={styles.formSubtitle}>
+                Enter your details to get started.
+              </Text>
             </View>
 
-            {/* Registration Action Layout Section */}
-            <View style={styles.footerContainer}>
-              <Text style={styles.footerText}>Already Registered , Sign in</Text>
-              <Pressable 
-                style={({ pressed }) => [
-                  styles.secondaryButton, 
-                  { opacity: pressed ? 0.75 : 1 }
-                ]}
-            onPress={() => navigation.navigate('LoginScreen')}
-              >
-                <Text style={styles.secondaryButtonText}>Click me to Sign in</Text>
-              </Pressable>
-            </View>
+            {/* USERNAME */}
 
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </SafeAreaProvider>
+            {renderInput({
+              label: "Username",
+              icon: "person-outline",
+              value: username,
+              onChangeText: setUsername,
+              placeholder: "Choose a username",
+              autoCapitalize: "none",
+              autoComplete: "username",
+            })}
+
+            {/* FULL NAME */}
+
+            {renderInput({
+              label: "Full Name",
+              icon: "person-circle-outline",
+              value: fullName,
+              onChangeText: setFullName,
+              placeholder: "Enter your full name",
+              autoCapitalize: "words",
+              autoComplete: "name",
+            })}
+
+            {/* PASSWORD */}
+
+            {renderInput({
+              label: "Password",
+              icon: "lock-closed-outline",
+              value: password,
+              onChangeText: setPassword,
+              placeholder: "Create a password",
+              autoCapitalize: "none",
+              autoComplete: "new-password",
+              secureTextEntry: !showPassword,
+              returnKeyType: "next",
+
+              rightAction: (
+                <Pressable
+                  style={styles.passwordToggle}
+                  onPress={() =>
+                    setShowPassword((current) => !current)
+                  }
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={
+                    showPassword
+                      ? "Hide password"
+                      : "Show password"
+                  }
+                >
+                  <Ionicons
+                    name={
+                      showPassword
+                        ? "eye-off-outline"
+                        : "eye-outline"
+                    }
+                    size={20}
+                    color="#64748B"
+                  />
+                </Pressable>
+              ),
+            })}
+
+            {/* EMAIL */}
+
+            {renderInput({
+              label: "Email Address",
+              icon: "mail-outline",
+              value: email,
+              onChangeText: setEmail,
+              placeholder: "Enter your email address",
+              keyboardType: "email-address",
+              autoCapitalize: "none",
+              autoComplete: "email",
+              returnKeyType: "next",
+            })}
+
+            {/* PHONE */}
+
+            {renderInput({
+              label: "Phone Number",
+              icon: "logo-whatsapp",
+              value: phoneNumber,
+              onChangeText: setPhoneNumber,
+              placeholder: "WhatsApp-active phone number",
+              keyboardType: "phone-pad",
+              autoCapitalize: "none",
+              autoComplete: "tel",
+              returnKeyType: "done",
+            })}
+
+            <Text style={styles.phoneHint}>
+              Use the phone number where you can receive
+              WhatsApp messages.
+            </Text>
+
+            {/* REGISTER BUTTON */}
+
+            <Pressable
+              disabled={loading}
+              onPress={handleRegister}
+              accessibilityRole="button"
+              accessibilityLabel="Create eVault account"
+              style={({ pressed }) => [
+                styles.primaryButton,
+                loading && styles.buttonDisabled,
+                pressed &&
+                  !loading &&
+                  styles.primaryButtonPressed,
+              ]}
+            >
+              {loading ? (
+                <ActivityIndicator
+                  color="#FFFFFF"
+                  size="small"
+                />
+              ) : (
+                <>
+                  <Text style={styles.primaryButtonText}>
+                    Create Account
+                  </Text>
+
+                  <Ionicons
+                    name="arrow-forward"
+                    size={19}
+                    color="#FFFFFF"
+                  />
+                </>
+              )}
+            </Pressable>
+
+            <View style={styles.secureNote}>
+              <Ionicons
+                name="shield-checkmark-outline"
+                size={15}
+                color="#64748B"
+              />
+
+              <Text style={styles.secureNoteText}>
+                Your account details are handled securely.
+              </Text>
+            </View>
+          </View>
+
+          {/* SIGN-IN FOOTER */}
+
+          <View style={styles.footerContainer}>
+            <Text style={styles.footerText}>
+              Already registered?
+            </Text>
+
+            <Pressable
+              onPress={() =>
+                navigation?.navigate("LoginScreen")
+              }
+              style={({ pressed }) => [
+                styles.signInButton,
+                pressed && styles.signInButtonPressed,
+              ]}
+              accessibilityRole="button"
+            >
+              <Text style={styles.signInText}>
+                Sign in to your account
+              </Text>
+            </Pressable>
+          </View>
+
+          <Text style={styles.footerBrand}>
+            eVault Corporate
+          </Text>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
+// =====================================================
+// STYLES
+// =====================================================
+
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#F5F7FC",
+  },
+
   container: {
     flex: 1,
-    backgroundColor: '#f8fafc', // Modern off-white background
   },
+
   scrollContent: {
     flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 40,
+    alignItems: "center",
+    paddingHorizontal: 19,
+    paddingTop: 18,
+    paddingBottom: 25,
   },
+
+  // BRAND HEADER
+
+  brandHeader: {
+    width: "100%",
+    maxWidth: 440,
+    alignItems: "center",
+    marginBottom: 22,
+  },
+
   logoContainer: {
-    marginBottom: 20,
-    padding: 14,
-    backgroundColor: '#264bc5', 
-    borderRadius: 22,
-    shadowColor: '#264bc5',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
+    width: 66,
+    height: 66,
+    borderRadius: 21,
+    backgroundColor: BRAND,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+
+    shadowColor: BRAND,
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.17,
+    shadowRadius: 9,
     elevation: 5,
   },
-  headerLogo: {
-    width: 56,
-    height: 56,
-    resizeMode: 'contain',
+
+  logo: {
+    width: 47,
+    height: 47,
+    resizeMode: "contain",
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#0f172a',
-    marginBottom: 4,
+
+  brandTitle: {
+    fontSize: 23,
+    lineHeight: 29,
+    fontWeight: "900",
+    color: "#111B35",
+    textAlign: "center",
+    letterSpacing: -0.45,
   },
-  subtitle: {
-    fontSize: 14,
-    color: '#64748b', 
-    textAlign: 'center',
-    marginBottom: 32,
+
+  brandSubtitle: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: "#718096",
+    textAlign: "center",
+    marginTop: 3,
   },
-  formContainer: {
-    width: '100%',
-    backgroundColor: '#ffffff',
-    borderRadius: 24,
-    padding: 24,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 12,
+
+  // FORM CARD
+
+  formCard: {
+    width: "100%",
+    maxWidth: 440,
+    paddingHorizontal: 18,
+    paddingTop: 20,
+    paddingBottom: 17,
+    borderRadius: 22,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E8EDF5",
+
+    shadowColor: "#15264B",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.055,
+    shadowRadius: 13,
     elevation: 3,
-    marginBottom: 24,
   },
+
+  formHeading: {
+    marginBottom: 16,
+  },
+
+  formTitle: {
+    fontSize: 19,
+    lineHeight: 25,
+    color: "#16213A",
+    fontWeight: "900",
+  },
+
+  formSubtitle: {
+    fontSize: 11.5,
+    lineHeight: 17,
+    color: "#7B8799",
+    marginTop: 3,
+  },
+
+  // INPUTS
+
   inputGroup: {
-    width: '100%',
-    marginBottom: 18,
+    width: "100%",
+    minWidth: 0,
+    marginBottom: 12,
   },
+
   inputLabel: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: "#334155",
+    fontWeight: "800",
+    marginBottom: 6,
+    paddingLeft: 1,
+  },
+
+  inputWrapper: {
+    width: "100%",
+    minWidth: 0,
+    height: 49,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingLeft: 12,
+    paddingRight: 7,
+    borderRadius: 12,
+    backgroundColor: "#F8FAFD",
+    borderWidth: 1,
+    borderColor: "#E1E7F0",
+  },
+
+  inputIcon: {
+    width: 23,
+    marginRight: 8,
+    textAlign: "center",
+  },
+
+  input: {
+    flex: 1,
+    minWidth: 0,
+    height: 47,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
     fontSize: 13,
-    fontWeight: '700',
-    color: '#334155',
-    marginBottom: 8,
+    lineHeight: 18,
+    color: "#172033",
+    includeFontPadding: false,
+    textAlignVertical: "center",
+  },
+
+  passwordToggle: {
+    width: 35,
+    height: 43,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 3,
+  },
+
+  phoneHint: {
+    fontSize: 10,
+    lineHeight: 15,
+    color: "#8290A3",
+    marginTop: -5,
+    marginBottom: 7,
     paddingLeft: 2,
   },
-  input: {
-    width: '100%',
-    backgroundColor: '#f1f5f9',
-    height: 52,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    fontSize: 15,
-    color: '#0f172a',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-  },
-  forgotPasswordWrapper: {
-    alignSelf: 'flex-end',
-    marginBottom: 24,
-  },
-  forgotPasswordText: {
-    color: '#264bc5',
-    fontSize: 13,
-    fontWeight: '600',
-  },
+
+  // REGISTER BUTTON
+
   primaryButton: {
-    width: '100%',
-    backgroundColor: '#264bc5', 
-    paddingVertical: 16,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#264bc5',
-    shadowOffset: { width: 0, height: 4 },
+    width: "100%",
+    minHeight: 49,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    borderRadius: 13,
+    backgroundColor: BRAND,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 9,
+    marginTop: 6,
+
+    shadowColor: BRAND,
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
     shadowOpacity: 0.15,
     shadowRadius: 6,
     elevation: 3,
   },
+
+  primaryButtonPressed: {
+    backgroundColor: BRAND_DARK,
+  },
+
+  buttonDisabled: {
+    opacity: 0.65,
+  },
+
   primaryButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: "900",
+    color: "#FFFFFF",
+    letterSpacing: 0.2,
   },
+
+  // SECURITY NOTE
+
+  secureNote: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    marginTop: 13,
+  },
+
+  secureNoteText: {
+    fontSize: 9.5,
+    lineHeight: 14,
+    color: "#8490A1",
+  },
+
+  // FOOTER
+
   footerContainer: {
-    alignItems: 'center',
-    marginTop: 8,
+    width: "100%",
+    alignItems: "center",
+    marginTop: 19,
   },
+
   footerText: {
-    fontSize: 14,
-    color: '#64748b',
-    marginBottom: 6,
+    fontSize: 12,
+    lineHeight: 18,
+    color: "#718096",
   },
-  secondaryButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 16,
+
+  signInButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 9,
+    marginTop: 1,
   },
-  secondaryButtonText: {
-    color: '#264bc5',
-    fontSize: 15,
-    fontWeight: '700',
+
+  signInButtonPressed: {
+    backgroundColor: BRAND_LIGHT,
+  },
+
+  signInText: {
+    color: BRAND,
+    fontSize: 12,
+    fontWeight: "900",
+  },
+
+  footerBrand: {
+    fontSize: 9,
+    color: "#A0AABC",
+    marginTop: 12,
+    fontWeight: "700",
+    letterSpacing: 0.6,
   },
 });

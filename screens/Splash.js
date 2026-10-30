@@ -39,7 +39,7 @@ export default function Splash({ navigation }) {
       />
 
       <Text style={styles.version}>
-        Version 1.0.0
+        Version 2.0.0
       </Text>
 
     </SafeAreaView>

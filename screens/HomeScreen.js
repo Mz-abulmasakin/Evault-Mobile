@@ -1,404 +1,836 @@
-import React, { useState, useCallback } from 'react'; 
-import { useNavigation } from '@react-navigation/native';
-import { StatusBar } from 'expo-status-bar';
-import { 
-  StyleSheet, Text, View, Pressable, Platform, Alert, ScrollView, Modal, RefreshControl 
-} from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'; 
-import { Ionicons } from '@expo/vector-icons';
 
-// --- CUSTOM COMPONENT IMPORTS ---
-import UserCard from '../components/UserCard';
-import PromoCarousel from '../components/Advert-slide';
-import ServicesScreen from '../screens/ServicesScreen';
-import ProfileScreen from '../screens/ProfileScreen';
-import TinRegistration from '../screens/TinRegistration';
-import WorksScreen from '../screens/WorksScreen';
-import AirtimePurchaseModal from '../components/AirtimePurchaseModal'; 
-import DataPurchaseModal from '../components/DataPurchaseModal'; 
-import CacRegistrationForm from '../components/CacRegistrationForm'; 
-import HomeScreenHeader from '../components/HomeScreenHeader';
+// screens/HomeScreen.js
+
+import React, {
+  useCallback,
+  useState,
+} from "react";
+
+import {
+  Alert,
+  Linking,
+  Platform,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { StatusBar } from "expo-status-bar";
+
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+
+// =========================================================
+// COMPONENTS
+// =========================================================
+
+import PromoCarousel from "../components/Advert-slide";
+import AirtimePurchaseModal from "../components/AirtimePurchaseModal";
+import BvnRecoveryModal from "../components/BvnRecoveryModal";
+import BvnValidationModal from "../components/BvnValidationModal";
+import CableTVModal from "../components/CableTVModal";
+import DataPurchaseModal from "../components/DataPurchaseModal";
+import ExaminationResultPinModal from "../components/ExaminationResultPinModal";
+import HomeScreenHeader from "../components/HomeScreenHeader";
+import ManualFundingBanner from "../components/ManualFundingBanner";
+import NinRecoveryModal from "../components/NinRecoveryModal";
+import NinVerificationModal from "../components/NinVerificationModal";
+import UserCard from "../components/UserCard";
+
+// =========================================================
+// BRAND
+// =========================================================
+
+const BRAND_COLOR = "#2A5FD3";
+const BRAND_LIGHT = "#EEF4FF";
+const WHATSAPP_GREEN = "#25D366";
+
+// =========================================================
+// WHATSAPP
+// =========================================================
+
+const WHATSAPP_AGENT_NUMBER = "2347084382293";
+
+const WHATSAPP_COMMUNITY_URL =
+  "https://chat.whatsapp.com/DAETBeqWEK37amKsrS0U2b?s=sh&p=a&mlu=4&ilr=4";
+
+const WHATSAPP_AGENT_URL =
+  `https://wa.me/${WHATSAPP_AGENT_NUMBER}?text=${encodeURIComponent(
+    "Hello eVault, I need assistance."
+  )}`;
+
+// =========================================================
+// ALERT HELPER
+// =========================================================
 
 function showAlert(message) {
-  if (Platform.OS === 'web') {
+  if (Platform.OS === "web") {
     window.alert(message);
   } else {
-    Alert.alert(message);
+    Alert.alert("eVault", message);
   }
 }
 
-const BRAND_COLOR = '#2a5fd3'; 
+// =========================================================
+// COMING SOON
+// =========================================================
+
+function showComingSoon(serviceName) {
+  const message =
+    `${serviceName} is coming soon. We are working to make this service available on eVault.`;
+
+  if (Platform.OS === "web") {
+    window.alert(`Coming Soon\n\n${message}`);
+  } else {
+    Alert.alert(
+      "Coming Soon",
+      message,
+      [{ text: "OK" }]
+    );
+  }
+}
+
+// =========================================================
+// WHATSAPP URL
+// =========================================================
+
+async function openWhatsAppUrl(url, fallbackMessage) {
+  try {
+    await Linking.openURL(url);
+  } catch (error) {
+    console.error(
+      "[EVault WHATSAPP]",
+      error?.message || error
+    );
+
+    showAlert(
+      fallbackMessage ||
+        "Unable to open WhatsApp. Please try again."
+    );
+  }
+}
+
+// =========================================================
+// HOME SCREEN
+// =========================================================
 
 export default function HomeScreen() {
   const navigation = useNavigation();
-  const insets = useSafeAreaInsets(); // real bottom inset for THIS device (gesture bar / home indicator)
+  const insets = useSafeAreaInsets();
 
-  // Modal Display States
-  const [airtimeVisible, setAirtimeVisible] = useState(false);
-  const [dataVisible, setDataVisible] = useState(false);
-  const [cacVisible, setCacVisible] = useState(false); 
+  const TAB_BAR_HEIGHT = 60;
 
-  // Refresh State Control
-  const [refreshing, setRefreshing] = useState(false);
+  // =======================================================
+  // MODAL STATES
+  // =======================================================
+
+  const [airtimeVisible, setAirtimeVisible] =
+    useState(false);
+
+  const [dataVisible, setDataVisible] =
+    useState(false);
+
+  const [cableTvVisible, setCableTvVisible] =
+    useState(false);
+
+  // Exam Result PIN modal
+  const [examResultPinVisible, setExamResultPinVisible] =
+    useState(false);
+
+  // Verify BVN modal
+  const [bvnVisible, setBvnVisible] =
+    useState(false);
+
+  // Recover BVN modal
+  const [bvnRecoveryVisible, setBvnRecoveryVisible] =
+    useState(false);
+
+  // Verify NIN modal
+  const [
+    ninVerificationVisible,
+    setNinVerificationVisible,
+  ] = useState(false);
+
+  // Recover NIN modal
+  const [
+    ninRecoveryVisible,
+    setNinRecoveryVisible,
+  ] = useState(false);
+
+  // =======================================================
+  // REFRESH
+  // =======================================================
+
+  const [refreshing, setRefreshing] =
+    useState(false);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
+
     setTimeout(() => {
       setRefreshing(false);
-    }, 2000);
+    }, 1200);
   }, []);
 
-  // If you have a custom bottom tab bar, set its rendered height here (excluding safe area inset).
-  const TAB_BAR_HEIGHT = 60;
+  // =======================================================
+  // NIN MODAL HANDLERS
+  // =======================================================
+
+  const openNinVerification = useCallback(() => {
+    setNinRecoveryVisible(false);
+    setNinVerificationVisible(true);
+  }, []);
+
+  const openNinRecovery = useCallback(() => {
+    setNinVerificationVisible(false);
+    setNinRecoveryVisible(true);
+  }, []);
+
+  // =======================================================
+  // BVN MODAL HANDLERS
+  // =======================================================
+
+  const openBvnVerification = useCallback(() => {
+    setBvnRecoveryVisible(false);
+    setBvnVisible(true);
+  }, []);
+
+  const openBvnRecovery = useCallback(() => {
+    setBvnVisible(false);
+    setBvnRecoveryVisible(true);
+  }, []);
+
+  // =======================================================
+  // EXAM RESULT PIN MODAL HANDLER
+  // =======================================================
+
+  const openExamResultPin = useCallback(() => {
+    setExamResultPinVisible(true);
+  }, []);
+
+  // =======================================================
+  // PROMO CAROUSEL ACTIONS
+  // =======================================================
+
+  const handlePromoPress = useCallback(
+    (item) => {
+      switch (String(item?.id)) {
+        case "1":
+          openNinRecovery();
+          break;
+
+        case "2":
+          openBvnVerification();
+          break;
+
+        case "3":
+          setDataVisible(true);
+          break;
+
+        case "4":
+          setAirtimeVisible(true);
+          break;
+
+        case "5":
+          setCableTvVisible(true);
+          break;
+
+        default:
+          navigation.navigate("Services");
+          break;
+      }
+    },
+    [
+      navigation,
+      openNinRecovery,
+      openBvnVerification,
+    ]
+  );
+
+  // =======================================================
+  // WHATSAPP COMMUNITY
+  // =======================================================
+
+  const openCommunity = useCallback(async () => {
+    if (
+      WHATSAPP_COMMUNITY_URL.includes(
+        "REPLACE_WITH_YOUR_GROUP_INVITE"
+      )
+    ) {
+      showAlert(
+        "Please add the WhatsApp community invitation link."
+      );
+
+      return;
+    }
+
+    await openWhatsAppUrl(
+      WHATSAPP_COMMUNITY_URL,
+      "Unable to open the eVault WhatsApp community."
+    );
+  }, []);
+
+  // =======================================================
+  // WHATSAPP SUPPORT
+  // =======================================================
+
+  const openWhatsAppAgent = useCallback(async () => {
+    await openWhatsAppUrl(
+      WHATSAPP_AGENT_URL,
+      "Unable to open eVault WhatsApp support."
+    );
+  }, []);
+
+  // =======================================================
+  // RENDER
+  // =======================================================
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <ScrollView 
-        contentContainerStyle={[
-          styles.scrollContent,
-          // Tightened bottom spacing: removed the large +24 buffer down to a minimal +4
-          { paddingBottom: TAB_BAR_HEIGHT + insets.bottom + 4 },
-        ]} 
+    <SafeAreaView
+      style={styles.container}
+      edges={["top", "left", "right"]}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        bounces={false}
         refreshControl={
-          <RefreshControl 
-            refreshing={refreshing} 
-            onRefresh={onRefresh} 
-            colors={[BRAND_COLOR]} 
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[BRAND_COLOR]}
             tintColor={BRAND_COLOR}
           />
         }
       >
-        
-        {/* Top Header Logo Container */}
+        {/* HEADER */}
+
         <HomeScreenHeader />
 
-        {/* User Account Dashboard Card */}
+        {/* USER CARD */}
+
         <View style={styles.cardContentWrapper}>
-          <UserCard 
-            username="Ziyaulhaq" 
-            bank="Evaultmoney" 
-            accountNumber="4092817364"
-            accountBalance="150,000" 
-          />
+          <UserCard />
         </View>
-        
-        {/* Promo Carousel */}
-        <PromoCarousel />
 
-        {/* Typography Content Group */}
+        {/* MANUAL FUNDING ADVERT */}
+
+        <ManualFundingBanner />
+
+        {/* COMPACT HERO */}
+
         <View style={styles.textHeroContainer}>
-          <Text style={styles.title}>Get your Business Up to Date without the headache</Text>
-          <Text style={styles.subtitle}>Professional processing, WhatsApp updates, Fast Services Delivery</Text>
+          <Text style={styles.title}>
+            Get Your Business Up to Date
+          </Text>
+
+          <Text style={styles.subtitle}>
+            Professional processing. Fast service delivery.
+          </Text>
         </View>
-      
-        {/* Quick Sub-Navigation Action Segment */}
-        <View style={styles.row2}> 
-          <View style={styles.wrapper}>
-            <Pressable 
+
+        {/* SERVICES */}
+
+        <View style={styles.servicesCard}>
+          <View style={styles.servicesHeader}>
+            <Text style={styles.servicesTitle}>
+              Our Services
+            </Text>
+
+            <Pressable
+              onPress={() =>
+                navigation.navigate("Services")
+              }
               style={({ pressed }) => [
-                styles.tabButton, 
-                pressed && styles.tabButtonPressed
-              ]} 
-              onPress={() => navigation.navigate('StatutoryHistoryScreen')}
+                styles.seeAllButton,
+                pressed && styles.seeAllButtonPressed,
+              ]}
+              accessibilityRole="button"
             >
-              <Text style={styles.tabBtnText}>History</Text>
+              <Text style={styles.seeAll}>
+                See all
+              </Text>
+
+              <Ionicons
+                name="chevron-forward"
+                size={12}
+                color={BRAND_COLOR}
+              />
             </Pressable>
           </View>
-          <View style={styles.wrapper}>
-            <Pressable 
-              style={({ pressed }) => [
-                styles.tabButton, 
-                pressed && styles.tabButtonPressed
-              ]} 
-              onPress={() => navigation.navigate('WorksScreen')}
-            >
-              <Text style={styles.tabBtnText}>Pending work</Text>
-            </Pressable>
-          </View>     
-        </View>
 
-        {/* --- UNIFIED SERVICES GRID CARD --- */}
-        <View style={styles.servicesGridCard}>
-          <Text style={styles.gridSectionTitle}>Our Services</Text>
-
-          {/* Row 1: Utilities & Telecom */}
-          <View style={styles.inlineButtonRow}>
-            <Pressable 
-              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
+          <View style={styles.servicesGrid}>
+            <ServiceItem
+              icon="phone-portrait-outline"
+              label="Airtime"
               onPress={() => setAirtimeVisible(true)}
-            >
-              <View style={styles.iconBackdropCircle}>
-                <Ionicons name="phone-portrait-outline" size={20} color="#ffffff" />
-              </View>
-              <Text style={styles.tileBtnText}>Airtime</Text>
-            </Pressable>
-          
-            <Pressable 
-              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
+            />
+
+            <ServiceItem
+              icon="wifi-outline"
+              label="Data"
               onPress={() => setDataVisible(true)}
-            >
-              <View style={styles.iconBackdropCircle}>
-                <Ionicons name="wifi-outline" size={20} color="#ffffff" />
-              </View>
-              <Text style={styles.tileBtnText}>Data</Text>
-            </Pressable>
+            />
 
-            <Pressable 
-              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('Cable TV subscription portals for DStv, GOtv, and StarTimes loading...')}
-            >
-              <View style={styles.iconBackdropCircle}>
-                <Ionicons name="tv-outline" size={20} color="#ffffff" />
-              </View>
-              <Text style={styles.tileBtnText}>Cable TV</Text>
-            </Pressable>
-          </View>
+            <ServiceItem
+              icon="tv-outline"
+              label="Cable TV"
+              onPress={() => setCableTvVisible(true)}
+            />
 
-          {/* Row 2: Corporate Registrations */}
-          <View style={styles.inlineButtonRow}>
-            <Pressable 
-              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => setCacVisible(true)}
-            >
-              <View style={styles.iconBackdropCircle}>
-                <Ionicons name="business-outline" size={20} color="#ffffff" />
-              </View>
-              <Text style={styles.tileBtnText}>CAC Reg</Text>
-            </Pressable>
-          
-            <Pressable 
-              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('SCUML Compliance processing portal routing active soon.')}
-            >
-              <View style={styles.iconBackdropCircle}>
-                <Ionicons name="shield-checkmark-outline" size={20} color="#ffffff" />
-              </View>
-              <Text style={styles.tileBtnText}>SCUML</Text>
-            </Pressable>
+            <ServiceItem
+              icon="shield-checkmark-outline"
+              label="IPE Clearance"
+              onPress={() =>
+                showComingSoon("IPE Clearance")
+              }
+            />
 
-            <Pressable 
-              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('Trademark Protection setup: Secure your business brand name and logo.')}
-            >
-              <View style={styles.iconBackdropCircle}>
-                <Ionicons name="ribbon-outline" size={20} color="#ffffff" />
-              </View>
-              <Text style={styles.tileBtnText}>Trademark</Text>
-            </Pressable>
-          </View>
-    
-          {/* Row 3: Identity & Basic Tax Verification */}
-          <View style={styles.inlineButtonRow}>
-            <Pressable 
-              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('NIN Validation Engine online: Verify identity records.')}
-            >
-              <View style={styles.iconBackdropCircle}>
-                <Ionicons name="id-card-outline" size={20} color="#ffffff" />
-              </View>
-              <Text style={styles.tileBtnText}>NIN</Text>
-            </Pressable>
-          
-            <Pressable 
-              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('BVN Validation Verification Engine online.')}
-            >
-              <View style={styles.iconBackdropCircle}>
-                <Ionicons name="finger-print-outline" size={20} color="#ffffff" />
-              </View>
-              <Text style={styles.tileBtnText}>BVN Services</Text>
-            </Pressable>
+            {/* VERIFY BVN */}
 
-            <Pressable 
-              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => navigation.navigate('TinRegistration')}            
-            >
-              <View style={styles.iconBackdropCircle}>
-                <Ionicons name="document-text-outline" size={20} color="#ffffff" />
-              </View>
-              <Text style={styles.tileBtnText}>TIN</Text>
-            </Pressable>
-          </View>
+            <ServiceItem
+              icon="finger-print-outline"
+              label="Verify BVN"
+              onPress={openBvnVerification}
+            />
 
-          {/* Row 4: Premium Operations & Catch-All */}
-          <View style={styles.inlineButtonRow}>
-            <Pressable 
-              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('Premium NIN Extended Services Portal.')}
-            >
-              <View style={styles.iconBackdropCircle}>
-                <Ionicons name="people-outline" size={20} color="#ffffff" />
-              </View>
-              <Text style={styles.tileBtnText}>NIN Services</Text>
-            </Pressable>
-          
-            <Pressable 
-              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => showAlert('BVN Premium Data Slip extraction utility online.')}
-            >
-              <View style={styles.iconBackdropCircle}>
-                <Ionicons name="receipt-outline" size={20} color="#ffffff" />
-              </View>
-              <Text style={styles.tileBtnText}>BVN Slip</Text>
-            </Pressable>
+            {/* RECOVER BVN */}
 
-            <Pressable 
-              style={({ pressed }) => [styles.premiumTile, pressed && styles.tilePressed]} 
-              onPress={() => navigation.navigate('Services')}
-            >
-              <View style={styles.iconBackdropCircle}>
-                <Ionicons name="ellipsis-horizontal-outline" size={20} color="#ffffff" />
-              </View>
-              <Text style={styles.tileBtnText}>More</Text>
-            </Pressable>
+            <ServiceItem
+              icon="search-outline"
+              label="Recover BVN"
+              onPress={openBvnRecovery}
+            />
+
+            {/* VERIFY NIN */}
+
+            <ServiceItem
+              icon="id-card-outline"
+              label="Verify NIN"
+              onPress={openNinVerification}
+            />
+
+            {/* RECOVER NIN */}
+
+            <ServiceItem
+              icon="search-outline"
+              label="Recover NIN"
+              onPress={openNinRecovery}
+            />
+
+            {/* NIN VALIDATION */}
+
+            <ServiceItem
+              icon="checkmark-circle-outline"
+              label="NIN Validation"
+              onPress={() =>
+                showComingSoon("NIN Validation")
+              }
+            />
+
+            {/* EXAM RESULT PIN */}
+
+            <ServiceItem
+              icon="school-outline"
+              label="Exam Result PIN"
+              onPress={openExamResultPin}
+            />
+
+            {/* MORE */}
+
+            <ServiceItem
+              icon="grid-outline"
+              label="More"
+              onPress={() =>
+                navigation.navigate("Services")
+              }
+            />
           </View>
         </View>
 
+        {/* WHATSAPP COMMUNITY */}
+
+        <Pressable
+          style={({ pressed }) => [
+            styles.whatsappCommunityButton,
+            pressed &&
+              styles.whatsappCommunityButtonPressed,
+          ]}
+          onPress={openCommunity}
+          accessibilityRole="button"
+          accessibilityLabel="Join eVault WhatsApp community"
+        >
+          <View style={styles.whatsappCommunityIcon}>
+            <Ionicons
+              name="logo-whatsapp"
+              size={19}
+              color={WHATSAPP_GREEN}
+            />
+          </View>
+
+          <View style={styles.whatsappCommunityTextWrap}>
+            <Text style={styles.whatsappCommunityTitle}>
+              Join Our Community
+            </Text>
+
+            <Text style={styles.whatsappCommunitySubtitle}>
+              Connect with eVault on WhatsApp
+            </Text>
+          </View>
+
+          <Ionicons
+            name="chevron-forward"
+            size={17}
+            color={WHATSAPP_GREEN}
+          />
+        </Pressable>
+
+        {/* PROMO CAROUSEL */}
+
+        <View style={styles.promoOuter}>
+          <View style={styles.promoFrame}>
+            <PromoCarousel
+              onBannerPress={handlePromoPress}
+            />
+          </View>
+        </View>
       </ScrollView>
-      <StatusBar style="dark" /> 
 
-      {/* Modal Context Mounting Points */}
-      <AirtimePurchaseModal 
-        visible={airtimeVisible} 
-        onClose={() => setAirtimeVisible(false)} 
-      />
+      {/* FLOATING WHATSAPP SUPPORT BUTTON */}
 
-      <DataPurchaseModal 
-        visible={dataVisible} 
-        onClose={() => setDataVisible(false)} 
-      />
-
-      <Modal
-        animationType="slide"
-        transparent={false}
-        visible={cacVisible}
-        onRequestClose={() => setCacVisible(false)}
+      <Pressable
+        style={({ pressed }) => [
+          styles.whatsappFloatingButton,
+          pressed &&
+            styles.whatsappFloatingButtonPressed,
+          {
+            bottom:
+              insets.bottom +
+              TAB_BAR_HEIGHT +
+              8,
+          },
+        ]}
+        onPress={openWhatsAppAgent}
+        accessibilityRole="button"
+        accessibilityLabel="Chat with eVault on WhatsApp"
       >
-        <CacRegistrationForm onClose={() => setCacVisible(false)} />
-      </Modal>
+        <Ionicons
+          name="logo-whatsapp"
+          size={25}
+          color="#FFFFFF"
+        />
+      </Pressable>
 
+      <StatusBar style="dark" />
+
+      {/* SERVICE MODALS */}
+
+      <AirtimePurchaseModal
+        visible={airtimeVisible}
+        onClose={() => setAirtimeVisible(false)}
+      />
+
+      <DataPurchaseModal
+        visible={dataVisible}
+        onClose={() => setDataVisible(false)}
+      />
+
+      <CableTVModal
+        visible={cableTvVisible}
+        onClose={() => setCableTvVisible(false)}
+      />
+
+      {/* EXAMINATION RESULT PIN MODAL */}
+
+      <ExaminationResultPinModal
+        visible={examResultPinVisible}
+        onClose={() => setExamResultPinVisible(false)}
+      />
+
+      {/* VERIFY BVN MODAL */}
+
+      <BvnValidationModal
+        visible={bvnVisible}
+        onClose={() => setBvnVisible(false)}
+      />
+
+      {/* RECOVER BVN MODAL */}
+
+      <BvnRecoveryModal
+        visible={bvnRecoveryVisible}
+        onClose={() => setBvnRecoveryVisible(false)}
+      />
+
+      {/* VERIFY NIN MODAL */}
+
+      <NinVerificationModal
+        visible={ninVerificationVisible}
+        onClose={() => setNinVerificationVisible(false)}
+      />
+
+      {/* RECOVER NIN MODAL */}
+
+      <NinRecoveryModal
+        visible={ninRecoveryVisible}
+        onClose={() => setNinRecoveryVisible(false)}
+      />
     </SafeAreaView>
   );
 }
 
+// =========================================================
+// SERVICE ITEM — NO PRESS/HOVER HIGHLIGHT
+// =========================================================
+
+function ServiceItem({
+  icon,
+  label,
+  onPress,
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={styles.serviceItem}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+    >
+      <View style={styles.serviceIcon}>
+        <Ionicons
+          name={icon}
+          size={20}
+          color={BRAND_COLOR}
+        />
+      </View>
+
+      <Text
+        style={styles.serviceLabel}
+        numberOfLines={2}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+// =========================================================
+// STYLES
+// =========================================================
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff', 
+    backgroundColor: "#F7F9FC",
   },
+
   scrollContent: {
-    flexGrow: 1,
-    alignItems: 'center',
-    paddingTop: 16, 
+    alignItems: "center",
+    paddingTop: 0,
+    paddingBottom: 4,
   },
+
   cardContentWrapper: {
-    width: '100%', 
-    marginBottom: 24,
-  },
-  textHeroContainer: {
-    width: '92%',
-    paddingHorizontal: 8,
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#0f172a', 
+    width: "100%",
     marginBottom: 8,
-    textAlign: 'center',
-    letterSpacing: -0.2,
   },
+
+  textHeroContainer: {
+    width: "92%",
+    marginTop: 0,
+    marginBottom: 3,
+    paddingHorizontal: 2,
+  },
+
+  title: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: "#111827",
+    textAlign: "center",
+    lineHeight: 17,
+  },
+
   subtitle: {
-    fontSize: 13,
-    color: '#64748b', 
-    textAlign: 'center',
-    lineHeight: 18,
+    fontSize: 8.5,
+    color: "#6B7280",
+    textAlign: "center",
+    lineHeight: 11,
+    marginTop: 1,
   },
-  row2: {
-    flexDirection: 'row',
-    justifyContent: 'center', 
-    alignItems: 'center',
-    marginBottom: 20,
-    width: '92%',
-    borderRadius: 20,
-    backgroundColor: '#f1f5f9', 
-    padding: 4,
-  },
-  wrapper: {
-    flex: 1,
-    marginHorizontal: 4,
-  },
-  tabButton: {
-    backgroundColor: '#ffffff',
-    paddingVertical: 10,
-    borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+
+  servicesCard: {
+    width: "92%",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 14,
+    paddingTop: 5,
+    paddingHorizontal: 5,
+    paddingBottom: 3,
+    marginBottom: 3,
     borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderColor: "#EAF0F8",
+    shadowColor: "#000000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.035,
+    shadowRadius: 4,
+    elevation: 1,
   },
-  tabButtonPressed: {
-    backgroundColor: '#f8fafc',
-    opacity: 0.9,
+
+  servicesHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 6,
+    marginBottom: 2,
+    minHeight: 23,
   },
-  tabBtnText: {
+
+  servicesTitle: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#222222",
+  },
+
+  seeAllButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 1,
+    paddingHorizontal: 5,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+
+  seeAllButtonPressed: {
+    backgroundColor: BRAND_LIGHT,
+  },
+
+  seeAll: {
+    fontSize: 9,
+    fontWeight: "700",
     color: BRAND_COLOR,
-    fontSize: 13,
-    fontWeight: '700',
   },
-  servicesGridCard: {
-    width: '92%',
-    backgroundColor: '#ffffff',
-    borderRadius: 24,
-    padding: 12,
-    paddingTop: 16,
-    borderWidth: 1,
-    borderColor: '#f1f5f9',
-    /* Shadows removed cleanly */
+
+  servicesGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
   },
-  gridSectionTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#0f172a',
-    marginBottom: 12,
-    marginLeft: 6,
+
+  serviceItem: {
+    width: "25%",
+    height: 65,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 3,
+    paddingHorizontal: 2,
+    borderRadius: 10,
+    overflow: "hidden",
   },
-  inlineButtonRow: {
-    flexDirection: 'row', 
-    justifyContent: 'space-between',
-    width: '100%', 
-    marginVertical: 4,
-  },
-  premiumTile: {
-    flex: 1, 
-    flexDirection: 'column', 
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: BRAND_COLOR, 
-    paddingVertical: 16,     
-    marginHorizontal: 4, 
-    borderRadius: 16,
-    /* Shadows removed cleanly */
-  },
-  tilePressed: {
-    opacity: 0.88,
-    transform: [{ scale: 0.96 }],
-  },
-  iconBackdropCircle: {
+
+  serviceIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)', 
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
+    backgroundColor: "#EEF4FF",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 4,
   },
-  tileBtnText: {
-    color: '#ffffff',
-    fontSize: 11, 
-    fontWeight: '700',
-    textAlign: 'center',
-    paddingHorizontal: 2,
+
+  serviceLabel: {
+    fontSize: 8.5,
+    lineHeight: 10,
+    fontWeight: "600",
+    color: "#333333",
+    textAlign: "center",
+    maxWidth: 74,
+  },
+
+  whatsappCommunityButton: {
+    width: "92%",
+    minHeight: 41,
+    marginTop: 1,
+    marginBottom: 2,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#E7F7ED",
+  },
+
+  whatsappCommunityButtonPressed: {
+    backgroundColor: "#EAFBF0",
+  },
+
+  whatsappCommunityIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#EAFBF0",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  whatsappCommunityTextWrap: {
+    flex: 1,
+    marginLeft: 8,
+  },
+
+  whatsappCommunityTitle: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#168A42",
+  },
+
+  whatsappCommunitySubtitle: {
+    fontSize: 8,
+    color: "#6B7280",
+    marginTop: 1,
+  },
+
+  promoOuter: {
+    width: "100%",
+    marginTop: 0,
+    marginBottom: 0,
+    alignItems: "center",
+  },
+
+  promoFrame: {
+    width: "100%",
+    overflow: "hidden",
+    backgroundColor: "#FFFFFF",
+  },
+
+  whatsappFloatingButton: {
+    position: "absolute",
+    right: 13,
+    width: 47,
+    height: 47,
+    borderRadius: 24,
+    backgroundColor: WHATSAPP_GREEN,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000000",
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.16,
+    shadowRadius: 4,
+    elevation: 6,
+    zIndex: 999,
+  },
+
+  whatsappFloatingButtonPressed: {
+    backgroundColor: WHATSAPP_GREEN,
+    opacity: 0.82,
   },
 });

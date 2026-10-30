@@ -1,8 +1,10 @@
+
 {
   "expo": {
-    "name": "TestApp",
-    "slug": "TestApp",
-    "version": "1.0.0",
+    "name": "eVault",
+    "slug": "evaultapp",
+    "scheme": "evault",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -16,20 +18,39 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "package": "com.ziyau.hak.TestA"
+      "package": "com.ziyau.hak.evaultapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-router",
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-secure-store",
+      "expo-sharing",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 120,
+          "backgroundColor": "#2A5FD3",
+          "dark": {
+            "image": "./assets/splash-icon.png",
+            "backgroundColor": "#2A5FD3"
+          }
+        }
+      ]
     ],
     "extra": {
-      "router": {},
       "eas": {
-        "projectId": "8da52499-809b-4d4a-8588-75c777624825"
+        "projectId": "b03f0817-19b8-4f17-87fe-a15d277dddc0"
       }
+    },
+    "owner": "ziyau.hak",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/b03f0817-19b8-4f17-87fe-a15d277dddc0"
     }
   }
 }
